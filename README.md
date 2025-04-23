@@ -141,7 +141,7 @@ python main.py --file path/to/audio.wav
 
 2. 交互式模式:
 ```bash
-python main.py --interactive
+python main.py --watch-dir test
 ```
 
 

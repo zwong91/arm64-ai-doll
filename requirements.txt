@@ -13,7 +13,6 @@ tiktoken==0.5.1
 transformers==4.48.0
 jinja2==3.1.2
 jsonlines==4.0.0
-trl==0.13.0
 ujson==5.1.0
 sherpa-onnx
 watchdog
