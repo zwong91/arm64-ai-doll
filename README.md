@@ -193,18 +193,14 @@ if __name__ == "__main__":
 #### 1.4 分发
 生成的可执行文件可以直接分发给用户，他们无需安装 Python 或依赖包。用户只需要双击或在命令行运行即可：
 ```bash
-./main --file example.mp3
+./arm64_ai_doll --file example.mp3
 ```
 
 ### models
 ```
-
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-melo-tts-zh_en.tar.bz2
 tar xvf vits-melo-tts-zh_en.tar.bz2
 rm vits-melo-tts-zh_en.tar.bz2
-
-
-
 
 ```
 
