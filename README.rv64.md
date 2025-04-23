@@ -47,7 +47,7 @@ docker run --rm -it --platform=linux/riscv64 alpine
 
    ```bash
    apk update
-   apk add --no-cache python3 py3-pip build-base git git-lfs curl wget
+   apk add --no-cache python3 py3-pip build-base git git-lfs curl wget pkgconfig ffmpeg-dev
    ```
 
    这会安装 Python 3 和相关的编译工具（`build-base` 包含了 `gcc`、`make` 等工具）。
@@ -112,7 +112,7 @@ source $HOME/.cargo/env
 
    ```bash
    sudo apt update
-   sudo apt install -y python3-dev cmake gcc g++ git libopenblas-dev libssl-de
+   sudo apt install -y python3-dev cmake gcc g++ git libopenblas-dev libssl-dev
    ```
 2. **克隆 PyTorch 源码**：
 
