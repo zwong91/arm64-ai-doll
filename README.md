@@ -5,7 +5,7 @@
 基于 fast-whisper、Minimind 和 sherpa-onnx 的语音助手系统。
 
 ## 安装
-## 🐳 使用 Docker 构建 RISC-V 虚拟环境（macOS M1/M2）
+## 🐳 使用 Docker 构建 ARM64 虚拟环境（macOS M1/M2）
 
 ### ✅ 1. 安装 Docker（支持 `--platform`）
 
