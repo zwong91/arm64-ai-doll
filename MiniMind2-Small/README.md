@@ -1,0 +1,1 @@
+git clone https://huggingface.co/jingyaogong/MiniMind2-Small
