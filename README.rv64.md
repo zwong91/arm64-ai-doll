@@ -104,48 +104,7 @@ source $HOME/.cargo/env
 目前，适用于 RISC-V 64 架构的官方 PyTorch wheel 包仍然较为稀缺，社区构建的版本可能存在兼容性问题，导致在您的环境中无法成功安装。
 
 ### 🛠️ 推荐方案：从源码编译 PyTorch
-鉴于预编译的 wheel 包可能不适用于您的特定环境，建议您从源码编译 PyTorch，以确保最佳的兼容性和性能以下是基于社区经验的编译步骤：
-
-1. **准备依赖环境**：
-
-   确保安装了必要的依赖项，如 Python 开发头文件、CMake、GCC 等。
-
-   ```bash
-   sudo apt update
-   sudo apt install -y python3-dev cmake gcc g++ git libopenblas-dev libssl-dev
-   ```
-2. **克隆 PyTorch 源码**：
-
-   从官方仓库克隆 PyTorch 的源码，并切换到稳定的版本分支（例如 v2.3.0）：
-
-   ```bash
-   git clone --recursive https://github.com/pytorch/pytorch.git
-   cd pytorch
-   git checkout v2.3.0
-   git submodule sync
-   git submodule update --init --recursiv
-   ```
-3. **配置编译选项**：
-
-   设置环境变量以禁用不支持的功能，如 CUDA 和分布式训练：
-
-   ```bash
-   export USE_CUDA=0
-   export USE_DISTRIBUTED=0
-   export USE_MKLDNN=0
-   export MAX_JOBS=
-   ```
-
-4. **编译并安装**：
-
-   使用 Python 的 `setup.py` 脚本进行编译和安装：
-
-   ```bash
-   python3 setup.py install
-   ```
-
-
-   请注意，编译过程可能需要较长时间，具体取决于您的系统性能。
+https://github.com/KumaTea/pytorch-riscv64
 
 5. **验证安装**：
 
