@@ -41,7 +41,7 @@ class LocalLLMClient:
             model_mode=2,
             dim=512,
             n_layers=8,
-            max_seq_len=128,
+            max_seq_len=200,
             lora_name='None',
             out_dir='output',
             device='cuda' if torch.cuda.is_available() else 'cpu',
@@ -54,7 +54,7 @@ class LocalLLMClient:
         self.top_p = 0.85
         self.device ='cuda' if torch.cuda.is_available() else 'cpu',
         self.stream = False
-        self.max_new_tokens = args.max_new_tokens if hasattr(args, 'max_new_tokens') else 128
+        self.max_new_tokens = args.max_new_tokens if hasattr(args, 'max_new_tokens') else 200
 
     def _init_model(self, args):
         real_path = resource_path('model/minimind_tokenizer')

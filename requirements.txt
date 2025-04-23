@@ -16,3 +16,4 @@ jsonlines==4.0.0
 trl==0.13.0
 ujson==5.1.0
 sherpa-onnx
+watchdog
