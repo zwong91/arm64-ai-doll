@@ -27,10 +27,8 @@ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 ### 步骤 2：运行一个 RISC-V 的镜像
 
-alpine（更小）：
-
 ```bash
-docker run --rm -it --platform=linux/riscv64 alpine
+docker run -it --platform=linux/riscv64 ubuntu:20.04
 ```
 
 ---
@@ -46,8 +44,9 @@ docker run --rm -it --platform=linux/riscv64 alpine
    首先更新 `apk` 并安装需要的包：
 
    ```bash
-   apk update
-   apk add --no-cache python3 py3-pip build-base git git-lfs curl wget pkgconfig ffmpeg-dev
+apt update
+apt install -y python3 python3-pip build-essential git git-lfs curl wget pkg-config libavcodec-dev libavformat-dev libswscale-dev
+
    ```
 
    这会安装 Python 3 和相关的编译工具（`build-base` 包含了 `gcc`、`make` 等工具）。
