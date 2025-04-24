@@ -19,6 +19,5 @@ ujson==5.1.0
 sherpa-onnx
 watchdog
 tensorboard
---extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.2.0
 torchaudio==2.2.0
