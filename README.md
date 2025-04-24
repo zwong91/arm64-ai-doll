@@ -19,7 +19,7 @@ docker buildx ls
 
 ---
 
-明白了！下面是**在 macOS M1/M2 上使用 Docker 启动 ARM64 Ubuntu 容器并搭建 Python 环境**的详细步骤，适用于你的语音助手（基于 fast-whisper、Minimind、sherpa-onnx）项目开发。
+下面是**在 macOS M1/M2 上使用 Docker 启动 ARM64 Ubuntu 容器并搭建 Python 环境**的详细步骤，适用于你的语音助手（基于 fast-whisper、Minimind、sherpa-onnx）项目开发。
 
 ---
 
@@ -40,7 +40,7 @@ docker buildx ls
 ### 2. 拉起 ARM64 架构的 Ubuntu 容器
 
 ```bash
-docker run -it --platform linux/arm64 arm64v8/ubuntu:22.04 bash
+docker run -rm -it --platform linux/arm64 arm64v8/ubuntu:22.04 bash
 
 docker ps
 docker exec -it 96991223cfe5 bash
@@ -131,7 +131,7 @@ tar czf /arm64_venv.tar.gz /opt/arm64_venv
 
 ```bash
 docker ps  # 查找 container ID
-docker cp <container_id>:/arm64_venv.tar.gz ./
+docker cp96991223cfe5:/root/arm64-ai-doll/dist ./
 ```
 
 ---
@@ -162,10 +162,8 @@ kill $(cat /path/to/pidfile.txt)
 ```bash
 pip install pyinstaller
 
-(arm64_venv) root@96991223cfe5:~/arm64-ai-doll# pyinstaller --onefile \
-  --name arm64_ai_doll \
+pyinstaller --onefile --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
-  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
