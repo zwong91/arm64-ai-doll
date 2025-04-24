@@ -40,10 +40,17 @@ docker buildx ls
 ### 2. 拉起 ARM64 架构的 Ubuntu 容器
 
 ```bash
-docker run -rm -it --platform linux/arm64 arm64v8/ubuntu:22.04 bash
+docker run -rm -it --platform linux/arm64 arm64v8/debian:11-slim bash
 
 docker ps
 docker exec -it 96991223cfe5 bash
+
+docker cp 96991223cfe5:/root/arm64-ai-doll/dist/arm64_ai_doll ./dist/
+docker run -it --platform linux/arm64 \
+  -v "$(pwd)/dist":/mnt/ \
+  arm64v8/debian:11-slim \
+  bash
+
 
 ```
 
