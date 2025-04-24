@@ -38,7 +38,7 @@ class VoiceAssistant:
                 os.unlink(temp_output.name)
             os.unlink(temp_input.name)
 
-    def process_audio_file(self, audio_file_path):
+    def process_audio_file(self, audio_file_path, output_dir='.'):
         """处理音频文件"""
         start_time = time.time()
         
@@ -58,7 +58,7 @@ class VoiceAssistant:
 
         # TTS耗时
         tts_start = time.time()
-        output_dir = os.path.dirname(audio_file_path)
+        os.makedirs(output_dir, exist_ok=True)
         output_file = os.path.join(output_dir, "response.wav")
         self.tts.synthesize(response, output_file)
         tts_time = time.time() - tts_start
@@ -108,6 +108,8 @@ def main():
     parser.add_argument('--asr-model', default='whisper', help='ASR model to use (e.g., whisper, sensevoice, etc.)')
     parser.add_argument('--watch-dir', help='Path to watch for audio files')
     parser.add_argument('--file', '-f', help='Path to input audio file')
+    parser.add_argument('--output-dir', help='Directory to save response audio file', default='.')
+    parser.add_argument('--pid-file', help='Path to save the process PID')
     args = parser.parse_args()
 
     start_time = time.time()
@@ -117,8 +119,14 @@ def main():
     loading_time = time.time() - start_time
     print(f"initial model loading time: {loading_time:.4f} seconds")
 
+    # 记录PID到文件
+    if args.pid_file:
+        with open(args.pid_file, 'w') as pid_file:
+            pid_file.write(str(os.getpid()))
+        print(f"PID saved to: {args.pid_file}")
+
     if args.file:
-        assistant.process_audio_file(args.file)
+        assistant.process_audio_file(args.file, args.output_dir)
     elif args.watch_dir:
         try:
             monitor_directory(args.watch_dir, assistant)

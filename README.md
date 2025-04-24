@@ -141,12 +141,13 @@ python main.py --file path/to/audio.wav
 
 2. 交互式模式:
 ```bash
-python main.py --watch-dir path/to/audio.wav --asr-model sensevoice
+python main.py --watch-dir path/to/audio.wav --asr-model sensevoice --pid-file /path/to/pidfile.txt
+kill $(cat /path/to/pidfile.txt)
 ```
 
 
 
-如果你想将类似 `python main.py --file example.mp3` 的 Python 脚本打包成一个可以分发的独立软件，可以使用几种工具来创建一个可执行的程序。以下是一些常见的步骤：
+如果你想将类似 `python main.py -f example.mp3` 的 Python 脚本打包成一个可以分发的独立软件，可以使用几种工具来创建一个可执行的程序。以下是一些常见的步骤：
 
 ### 1. 使用 PyInstaller 打包为可执行文件
 
@@ -194,7 +195,7 @@ if __name__ == "__main__":
 #### 1.4 分发
 生成的可执行文件可以直接分发给用户，他们无需安装 Python 或依赖包。用户只需要双击或在命令行运行即可：
 ```bash
-./arm64_ai_doll --file example.mp3
+./arm64_ai_doll -f example.mp3 --output-dir ./outputs/
 ```
 
 ### models
