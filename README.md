@@ -161,6 +161,29 @@ kill $(cat /path/to/pidfile.txt)
 首先，你需要安装 `PyInstaller`：
 ```bash
 pip install pyinstaller
+
+(arm64_venv) root@96991223cfe5:~/arm64-ai-doll# pyinstaller --onefile \
+  --name arm64_ai_doll \
+  --add-data "whisper_ckpt:whisper_ckpt" \
+  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
+  --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
+  --add-data "MiniMind2-Small:MiniMind2-Small" \
+  --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
+  main.py
+
+1045 INFO: PyInstaller: 6.13.0, contrib hooks: 2025.3
+1048 INFO: Python: 3.10.12
+1081 INFO: Platform: Linux-6.8.0-1024-aws-aarch64-with-glibc2.35
+1081 INFO: Python environment: /opt/arm64_venv
+1085 INFO: wrote /root/arm64-ai-doll/arm64_ai_doll.spec
+1099 INFO: Module search paths (PYTHONPATH):
+['/usr/lib/python310.zip',
+ '/usr/lib/python3.10',
+ '/usr/lib/python3.10/lib-dynload',
+ '/opt/arm64_venv/lib/python3.10/site-packages',
+ '/root/arm64-ai-doll']
+3350 INFO: Appending 'datas' from .spec
+
 ```
 
 #### 1.2 创建可执行文件
