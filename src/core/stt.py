@@ -1,32 +1,56 @@
 import sys
 import os
+import re
+import torch
 from faster_whisper import WhisperModel
+from funasr import AutoModel
+from funasr.utils.postprocess_utils import rich_transcription_postprocess
 
 def resource_path(path: str) -> str:
-    """
-    返回运行时可以访问到的绝对路径：
-    1) 如果用户传入的是绝对路径，就直接返回；
-    2) 否则在打包后，从 sys._MEIPASS 里找（PyInstaller onefile）；
-    3) 平时开发环境，就从当前工作目录找（os.path.abspath(".")）。
-    """
-    # 如果已经是绝对路径，直接返回
+    """返回资源文件的实际路径"""
     if os.path.isabs(path):
         return path
-
-    # 打包运行时，PyInstaller 会把所有资源解压到这里
     base_path = getattr(sys, "_MEIPASS", None) or os.path.abspath(".")
     return os.path.join(base_path, path)
 
-class SpeechToText:
-    def __init__(self, model_path="whisper_ckpt", device="cpu", compute_type="int8"):
-        # 示例模型 tiny，可以改成 base、small、medium、large-v3
-        #model_size = "tiny"
-        #self.model = WhisperModel(model_size, download_root="whisper_ckpt")
+def remove_tags(text: str) -> str:
+    return re.sub(r"<\|.*?\|>", "", text)
 
-        real_path = resource_path(model_path)
-        self.model = WhisperModel(real_path, device=device, compute_type=compute_type)
+class SpeechToText:
+    def __init__(self, backend="whisper", **kwargs):
+        """
+        backend: 选择后端，"whisper" 或 "sensevoice"
+        kwargs: 根据 backend 传不同的初始化参数
+        """
+        self.backend = backend.lower()
+        self.device = kwargs.get("device", "cuda" if torch.cuda.is_available() else "cpu")
+
+        if self.backend == "whisper":
+            self._init_whisper(kwargs)
+        elif self.backend == "sensevoice":
+            self._init_sensevoice(kwargs)
+        else:
+            raise ValueError(f"Unknown backend: {self.backend}")
+
+    def _init_whisper(self, kwargs):
+        model_path = resource_path(kwargs.get("model_path", "whisper_ckpt"))
+        compute_type = kwargs.get("compute_type", "int8")
+        self.model = WhisperModel(model_path, device=self.device, compute_type=compute_type)
+
+    def _init_sensevoice(self, kwargs):
+        model_name = kwargs.get("model_name", "iic/SenseVoiceSmall")
+        self.model = AutoModel(model=model_name, trust_remote_code=True, device=self.device, disable_update=True)
 
     def transcribe(self, audio_file):
-        """将音频转换为文本"""
-        segments, _ = self.model.transcribe(audio_file)
-        return " ".join([segment.text for segment in segments])
+        if self.backend == "whisper":
+            segments, _ = self.model.transcribe(audio_file)
+            return " ".join([segment.text for segment in segments])
+        elif self.backend == "sensevoice":
+            result = self.model.generate(
+                input=audio_file,
+                cache={},
+                language="auto",
+                use_itn=False,
+                batch_size=64
+            )[0]["text"].strip()
+            return remove_tags(result)

@@ -16,7 +16,7 @@ AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
 class VoiceAssistant:
     def __init__(self, config: Config):
         self.config = config
-        self.stt = SpeechToText(config.whisper_model, config.whisper_device, config.whisper_compute_type)
+        self.stt = SpeechToText(config.asr_model)
         self.tts = TextToSpeech(config.tts_voice)
         self.llm = LocalLLMClient(config.llm_model)
 
@@ -54,7 +54,7 @@ class VoiceAssistant:
         response = self.llm.get_response(text)
         llm_time = time.time() - llm_start
         print(f"LLM响应耗时: {llm_time:.2f}秒")
-        print(f"AI回复: {response}")
+        #print(f"AI回复: {response}")
 
         # TTS耗时
         tts_start = time.time()
@@ -105,12 +105,13 @@ def monitor_directory(path_to_watch, assistant: VoiceAssistant):
 
 def main():
     parser = argparse.ArgumentParser(description='Voice Assistant')
+    parser.add_argument('--asr-model', default='whisper', help='ASR model to use (e.g., whisper, sensevoice, etc.)')
     parser.add_argument('--watch-dir', help='Path to watch for audio files')
     parser.add_argument('--file', '-f', help='Path to input audio file')
     args = parser.parse_args()
 
     start_time = time.time()
-    config = Config()
+    config = Config(asr_model=args.asr_model)
     assistant = VoiceAssistant(config)
 
     loading_time = time.time() - start_time

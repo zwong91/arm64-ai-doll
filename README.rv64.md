@@ -28,7 +28,7 @@ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 ### 步骤 2：运行一个 RISC-V 的镜像
 
 ```bash
-docker run -it --platform=linux/riscv64 ubuntu:20.04
+docker run -it --platform=linux/riscv64 ubuntu:22.04
 ```
 
 ---
@@ -44,8 +44,8 @@ docker run -it --platform=linux/riscv64 ubuntu:20.04
    首先更新 `apk` 并安装需要的包：
 
    ```bash
-apt update
-apt install -y python3 python3-pip build-essential git git-lfs curl wget pkg-config libavcodec-dev libavformat-dev libswscale-dev
+    apt update
+    apt install -y python3 python3-pip build-essential git git-lfs curl wget pkg-config libavcodec-dev libavformat-dev libswscale-dev file
 
    ```
 
@@ -62,7 +62,10 @@ apt install -y python3 python3-pip build-essential git git-lfs curl wget pkg-con
 #### 1. 创建虚拟环境
 
 ```bash
-python --version
+python3 --version
+
+apt install python3.10-venv
+
 python3 -m venv myenv
 ```
 
@@ -105,7 +108,15 @@ source $HOME/.cargo/env
 ### 🛠️ 推荐方案：从源码编译 PyTorch
 https://github.com/KumaTea/pytorch-riscv64
 
-5. **验证安装**：
+(myenv) root@015d3e22a741:~# wget https://github.com/KumaTea/pytorch-riscv64/releases/download/2.4/python3.10_3.10.15+ubuntu2004_riscv64.deb
+(myenv) root@015d3e22a741:~# dpkg -i python3.10_3.10.15+ubuntu2004_riscv64.deb 
+(Reading database ... 18400 files and directories currently installed.)
+Preparing to unpack python3.10_3.10.15+ubuntu2004_riscv64.deb ...
+Unpacking python3.10 (3.10.15-1) over (3.10.12-1~22.04.9) ...
+Setting up python3.10 (3.10.15-1) ...
+(myenv) root@015d3e22a741:~# 
+
+1. **验证安装**：
 
    安装完成后，您可以通过以下命令验证 PyTorch 是否安装成功：
 

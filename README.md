@@ -141,7 +141,7 @@ python main.py --file path/to/audio.wav
 
 2. 交互式模式:
 ```bash
-python main.py --watch-dir test
+python main.py --watch-dir path/to/audio.wav --asr-model sensevoice
 ```
 
 
@@ -164,6 +164,7 @@ pip install pyinstaller
 pyinstaller --onefile \
   --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
+  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \

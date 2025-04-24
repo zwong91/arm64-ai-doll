@@ -1,4 +1,6 @@
-faster-whisper==1.1.0
+faster-whisper
+ctranslate2==4.4.0
+funasr==1.2.6
 sounddevice==0.4.1
 jieba==0.42.1
 jsonlines==4.0.0
@@ -16,3 +18,6 @@ jsonlines==4.0.0
 ujson==5.1.0
 sherpa-onnx
 watchdog
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0
+torchaudio==2.2.0

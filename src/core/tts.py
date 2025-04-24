@@ -56,7 +56,7 @@ class TextToSpeech:
         """Generate speech using Sherpa-ONNX"""
         try:
             # Path to the Sherpa-ONNX TTS binary
-            sherpa_onnx_bin = "./sherpa-onnx-offline-tts"
+            sherpa_onnx_bin = "sherpa-onnx-offline-tts"
             #os.chmod(sherpa_onnx_bin, 0o755)  # 确保可执行           
             # Find model files in the model directory
             model_files = {
