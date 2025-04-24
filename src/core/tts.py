@@ -23,7 +23,7 @@ class TextToSpeech:
                  model_dir="vits-icefall-zh-aishell3",  # Path to the Sherpa-ONNX TTS model directory
                  backend="sherpa-onnx",
                  voice="zh-cn",   # Language/voice code
-                 speed=1.2,       # Speaking rate (1.0 is normal speed)
+                 speed=0.8,       # Speaking rate (1.0 is normal speed)
         ):
 
         self.backend = backend
@@ -86,8 +86,8 @@ class TextToSpeech:
                 raise FileNotFoundError(f"No ONNX model file found in {self.model_dir}")
             
             # 设置sid和其他TTS相关的参数
-            sid = 66  # 说话人ID
-            
+            sid = 103  # 说话人ID
+            num_threads = os.cpu_count()
             # 动态生成 rule_fsts 参数
             rule_fsts = ",".join(model_files["rule_fsts"]) if model_files["rule_fsts"] else ""
 
@@ -100,9 +100,10 @@ class TextToSpeech:
                 f"--tts-rule-fsts={rule_fsts}",  # 添加规则文件参数
                 f"--vits-length-scale={self.speed}",  # 可变语速
                 f"--sid={sid}",
+                f"--num-threads={num_threads}",
                 f"--output-filename={output_file}",
                 f"{text}",
-            ] 
+            ]
             # Execute the command
             result = subprocess.run(
                 cmd,
