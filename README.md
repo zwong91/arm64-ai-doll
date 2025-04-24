@@ -40,7 +40,11 @@ docker buildx ls
 ### 2. 拉起 ARM64 架构的 Ubuntu 容器
 
 ```bash
-docker run --rm -it --platform linux/arm64 arm64v8/ubuntu:22.04 bash
+docker run -it --platform linux/arm64 arm64v8/ubuntu:22.04 bash
+
+docker ps
+docker exec -it 96991223cfe5 bash
+
 ```
 
 > ⏱ 初次拉取镜像可能稍慢，但之后速度会很快。
@@ -136,7 +140,7 @@ docker cp <container_id>:/arm64_venv.tar.gz ./
 
 1. 文件处理模式:
 ```bash
-python main.py --file path/to/audio.wav
+python main.py -f path/to/audio.wav
 ```
 
 2. 交互式模式:
