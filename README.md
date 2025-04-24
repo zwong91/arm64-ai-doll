@@ -40,7 +40,9 @@ docker buildx ls
 ### 2. 拉起 ARM64 架构的 Ubuntu 容器
 
 ```bash
-docker run -it --platform linux/arm64 arm64v8/debian:10.13-slim bash
+docker run -it --platform linux/arm64 arm64v8/debian:11-slim bash
+
+docker pull arm64v8/debian:10.13-slim
 
 docker ps
 docker exec -it 96991223cfe5 bash
@@ -48,9 +50,8 @@ docker exec -it 96991223cfe5 bash
 docker cp 96991223cfe5:/root/arm64-ai-doll/dist/arm64_ai_doll ./dist/
 docker run -it --platform linux/arm64 \
   -v "$(pwd)/dist":/mnt/ \
-  arm64v8/debian:10.13-slim \
+  arm64v8/debian:11-slim \
   bash
-
 
 ```
 
@@ -93,6 +94,23 @@ cd Python-3.10.13
 ./configure --enable-optimizations
 make -j2
 make install
+
+### Or 用 pyenv 安装（适用于 ARM64）
+# 安装 pyenv
+curl https://pyenv.run | bash
+
+# 添加环境变量（或加进 ~/.bashrc）
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+# 安装 Python 3.10.13
+pyenv install 3.10.13
+pyenv global 3.10.13
+
+# 检查版本
+python --version
+
 ```
 
 > ⚙️ 这一步大概几分钟，取决于你的 Mac 性能。
