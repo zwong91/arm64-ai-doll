@@ -47,8 +47,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"
 
 echo ">>> 6. 克隆项目代码"
-git clone https://github.com/zwong91/arm64-ai-doll.git
-cd arm64-ai-doll
+# git clone https://github.com/zwong91/arm64-ai-doll.git
+# cd arm64-ai-doll
 
 echo ">>> 7. 安装 Python 依赖（包括 numpy 降级）"
 pip uninstall -y numpy
