@@ -105,9 +105,14 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   main.py
 
 echo "🚀 Step 16: 运行打包后的程序"
+cp -r libs dist/arm64_ai_doll/
 cd dist/arm64_ai_doll
+
+ln -sf libportaudio.so.2 libs/libportaudio.so
+ln -sf libportaudiocpp.so.0 libs/libportaudiocpp.so
+
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)
-./arm64_ai_doll --input-device default --output-device default
+./arm64_ai_doll -i --input-device default --output-device default
 
 echo ">>> ✅ 构建完成，输出目录为 dist/arm64_ai_doll"
 
