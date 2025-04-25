@@ -84,35 +84,23 @@ pip install -r requirements.txt
 echo ">>> 13. 使用 PyInstaller 构建 arm64_ai_doll"
 pip install pyinstaller
 
-echo "🔧 Step 14: 准备 libs/ 动态库目录"
-mkdir -p libs
-
-cp /usr/lib/aarch64-linux-gnu/libportaudio.so.2 libs/
-cp /usr/lib/aarch64-linux-gnu/libportaudiocpp.so.0 libs/
-
-ln -sf libportaudio.so.2 libs/libportaudio.so
-ln -sf libportaudiocpp.so.0 libs/libportaudiocpp.so
-
-echo "📦 Step 15: 开始 PyInstaller 打包"
+echo "📦 Step 14: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
-  --add-binary "libs/libportaudio.so.2:." \
-  --add-binary "libs/libportaudiocpp.so.0:." \
+  --add-binary "3rd/libportaudio.a:./libportaudio" \
+  --add-data "3rd/portaudio.h:." \
   --collect-binaries sounddevice \
   main.py
 
-echo "🚀 Step 16: 运行打包后的程序"
-cp -r libs dist/arm64_ai_doll/
+echo "🚀 Step 15: 运行打包后的程序"
+cp -r 3rd dist/arm64_ai_doll/
 cd dist/arm64_ai_doll
 
-ln -sf libportaudio.so.2 libs/libportaudio.so
-ln -sf libportaudiocpp.so.0 libs/libportaudiocpp.so
-
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)
-./arm64_ai_doll -i --input-device default --output-device default
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)
+#./arm64_ai_doll -i --input-device default --output-device default
 
 echo ">>> ✅ 构建完成，输出目录为 dist/arm64_ai_doll"
 
@@ -120,7 +108,7 @@ echo ">>> ✅ 构建完成，输出目录为 dist/arm64_ai_doll"
 GIT_VER=$(git rev-parse --short HEAD)
 OUTPUT_NAME="arm64_ai_doll_${GIT_VER}.zip"
 
-echo ">>> 17. 压缩构建输出为 $OUTPUT_NAME"
+echo ">>> 16. 压缩构建输出为 $OUTPUT_NAME"
 
 # 进入 dist/
 cd ..
