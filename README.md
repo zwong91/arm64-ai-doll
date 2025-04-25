@@ -47,9 +47,9 @@ docker pull arm64v8/debian:10.13-slim
 docker ps
 docker exec -it baf8769b0701 bash
 
-docker cp 96991223cfe5:/root/arm64-ai-doll/dist/arm64_ai_doll ./dist/
+docker cp 9ebe94e97c12:/root/arm64-ai-doll/dist-0.0.2.zip ./
 docker run -it --platform linux/arm64 \
-  -v "$(pwd)/out":/mnt/ \
+  -v "$(pwd)/123":/mnt/ \
   arm64v8/debian:11-slim \
   bash
 
@@ -179,7 +179,8 @@ python main.py --list-devices
 
 python main.py -f input.wav --output-device "蓝牙耳机"
 
-python main.py -i --input-device "麦克风" --output-device "扬声器"
+./arm64_ai_doll --list-devices
+./arm64_ai_doll -i --input-device "麦克风<name or ID>" --output-device "扬声器<name or ID>"
 
 ```
 
