@@ -80,6 +80,7 @@ pip install -r requirements.txt
 
 
 echo ">>> 13. 使用 PyInstaller 构建 arm64_ai_doll"
+pip install pyinstaller
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
