@@ -29,9 +29,9 @@ class AudioManager:
         sd.wait()
         return recording
 
-    def record_until_silence(self, vad_model_path, max_duration=10, silence_duration=1.0):
+    def record_until_silence(self, vad_model_path, max_duration=10, silence_duration=2.0):
         sample_rate = self.sample_rate
-        chunk_duration = 0.1
+        chunk_duration = 0.5
         chunk_size = int(sample_rate * chunk_duration)
         silence_chunks = int(silence_duration / chunk_duration)
 
