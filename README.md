@@ -80,6 +80,9 @@ apt update && apt install -y \
   g++ \
   python3-venv \
   ca-certificates
+
+apt update && apt install -y libportaudio2 libportaudiocpp0 portaudio19-dev
+
 ```
 
 ---
@@ -131,7 +134,7 @@ source /opt/arm64_venv/bin/activate
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source $HOME/.cargo/env
+. "$HOME/.cargo/env"
 ```
 
 ---
@@ -139,8 +142,9 @@ source $HOME/.cargo/env
 ### 7. 安装项目依赖（建议使用清华源）
 
 ```bash
+git clone https://github.com/zwong91/arm64-ai-doll.git
 # 假设你项目已经挂载到了容器内，比如 /workspace/ai-doll
-cd /workspace/ai-doll
+cd arm64-ai-doll
 
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
@@ -170,6 +174,13 @@ pip install "numpy<2"
 1. 文件处理模式:
 ```bash
 python main.py -f path/to/audio.wav
+
+python main.py --list-devices
+
+python main.py -f input.wav --output-device "蓝牙耳机"
+
+python main.py -i --input-device "麦克风" --output-device "扬声器"
+
 ```
 
 2. 交互式模式:
