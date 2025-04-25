@@ -1,6 +1,6 @@
 class Config:
     def __init__(self, 
-                 asr_model='sensevoice',
+                 asr_model='whisper',
                  tts_voice='vits-icefall-zh-aishell3',
                  llm_model='MiniMind2-Small',
                  input_device=None,  # 音频输入设备

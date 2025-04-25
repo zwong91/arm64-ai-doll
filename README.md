@@ -143,10 +143,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ```bash
 git clone https://github.com/zwong91/arm64-ai-doll.git
-# 假设你项目已经挂载到了容器内，比如 /workspace/ai-doll
+# 假设你项目已经挂载到了容器内，比如 /workspace/arm64-ai-doll
 cd arm64-ai-doll
 
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+pip uninstall -y numpy
+pip install "numpy<2"
+
 ```
 
 ---
@@ -163,10 +167,6 @@ tar czf /arm64_venv.tar.gz /opt/arm64_venv
 docker ps  # 查找 container ID
 docker cp96991223cfe5:/root/arm64-ai-doll/dist ./
 ```
-
-pip uninstall -y numpy
-pip install "numpy<2"
-
 ---
 
 ## 使用方法
@@ -204,7 +204,6 @@ pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
-  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
@@ -268,6 +267,10 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-ice
 tar xvf vits-icefall-zh-aishell3.tar.bz2
 rm vits-icefall-zh-aishell3.tar.bz2
 
+
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.11.3/sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
+tar xvf sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
+rm sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
 ```
 
 ## 项目结构
