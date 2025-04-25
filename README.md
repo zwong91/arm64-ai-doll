@@ -38,7 +38,7 @@ docker exec -it baf8769b0701 bash
 
 docker cp 9ebe94e97c12:/root/arm64-ai-doll/dist-0.0.2.zip ./
 docker run -it --platform linux/arm64 \
-  -v "$(pwd)/123":/mnt/ \
+  -v "$(pwd)/444":/mnt/ \
   arm64v8/debian:11-slim \
   bash
 
@@ -197,7 +197,16 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
+  --collect-binaries sounddevice \
   main.py
+
+
+(arm64_venv) root@6f2423763367:~/arm64-ai-doll# ldconfig -p | grep portaudio
+	libportaudiocpp.so.0 (libc6,AArch64) => /usr/lib/aarch64-linux-gnu/libportaudiocpp.so.0
+	libportaudiocpp.so (libc6,AArch64) => /usr/lib/aarch64-linux-gnu/libportaudiocpp.so
+	libportaudio.so.2 (libc6,AArch64) => /usr/lib/aarch64-linux-gnu/libportaudio.so.2
+	libportaudio.so (libc6,AArch64) => /usr/lib/aarch64-linux-gnu/libportaudio.so
+
 
 1045 INFO: PyInstaller: 6.13.0, contrib hooks: 2025.3
 1048 INFO: Python: 3.10.12
