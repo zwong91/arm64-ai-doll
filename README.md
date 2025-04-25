@@ -6,17 +6,6 @@
 
 ## 安装
 ## 🐳 使用 Docker 构建 ARM64 虚拟环境（macOS M1/M2）
-
-### ✅ 1. 安装 Docker（支持 `--platform`）
-
-确保你已经安装了支持多架构（包括 QEMU）的 Docker 版本（Docker Desktop for Mac 是 OK 的）。
-
-验证支持 arm aarch64：
-
-```bash
-docker buildx ls
-```
-
 ---
 
 下面是**在 macOS M1/M2 上使用 Docker 启动 ARM64 Ubuntu 容器并搭建 Python 环境**的详细步骤，适用于你的语音助手（基于 fast-whisper、Minimind、sherpa-onnx）项目开发。
