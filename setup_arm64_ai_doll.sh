@@ -84,19 +84,37 @@ pip install -r requirements.txt
 echo ">>> 13. 使用 PyInstaller 构建 arm64_ai_doll"
 pip install pyinstaller
 
+
+echo ">>> 编译安装 PortAudio"
+apt-get update && apt-get install -y \
+    build-essential \
+    libasound2-dev \
+    libpulse-dev
+
+cd /tmp
+wget http://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz
+tar xf pa_stable_v190700_20210406.tgz
+cd portaudio
+./configure --enable-static --disable-shared
+make
+make install
+ldconfig
+
+cd -
+
 echo "📦 Step 14: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
-  --add-binary "3rd/libportaudio.a:./libportaudio" \
-  --add-data "3rd/portaudio.h:." \
-  --collect-binaries sounddevice \
+  --hidden-import="sounddevice" \
+  --hidden-import="_sounddevice_data" \
+  --hidden-import="numpy.core._multiarray_umath" \
+  --runtime-hook "hooks/rthook_portaudio.py" \
   main.py
 
 echo "🚀 Step 15: 运行打包后的程序"
-cp -r 3rd dist/arm64_ai_doll/
 cd dist/arm64_ai_doll
 
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)
