@@ -28,7 +28,7 @@ class VoiceAssistant:
 
     def process_conversation(self):
         """处理实时对话"""
-        audio = self.audio.record(self.config.record_duration, self.config.sample_rate)
+        audio = self.audio.record(self.config.record_duration)
         
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_input:
             self.audio.save(audio, temp_input.name, self.config.sample_rate)
