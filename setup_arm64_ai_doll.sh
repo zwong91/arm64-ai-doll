@@ -85,7 +85,7 @@ echo ">>> 13. 使用 PyInstaller 构建 arm64_ai_doll"
 pip install pyinstaller
 
 
-echo ">>> 编译安装 PortAudio"
+echo ">>>14. 编译安装 PortAudio"
 apt-get update && apt-get install -y \
     build-essential \
     libasound2-dev \
@@ -102,7 +102,7 @@ ldconfig
 
 cd -
 
-echo "📦 Step 14: 开始 PyInstaller 打包"
+echo "📦 Step 15: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
@@ -114,8 +114,8 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --runtime-hook "hooks/rthook_portaudio.py" \
   main.py
 
-echo "🚀 Step 15: 运行打包后的程序"
-cd dist/arm64_ai_doll
+#echo "🚀 Step 15: 运行打包后的程序"
+#cd dist/arm64_ai_doll
 
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)
 #./arm64_ai_doll -i --input-device default --output-device default
@@ -129,7 +129,7 @@ OUTPUT_NAME="arm64_ai_doll_${GIT_VER}.zip"
 echo ">>> 16. 压缩构建输出为 $OUTPUT_NAME"
 
 # 进入 dist/
-cd ..
+cd dist
 
 # 打包 arm64_ai_doll 目录（保持结构），输出在 dist 目录外
 zip -r "../$OUTPUT_NAME" arm64_ai_doll
