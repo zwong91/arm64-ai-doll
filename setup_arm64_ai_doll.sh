@@ -94,8 +94,16 @@ GIT_VER=$(git rev-parse --short HEAD)
 OUTPUT_NAME="arm64_ai_doll_${GIT_VER}.zip"
 
 echo ">>> 14. 压缩构建输出为 $OUTPUT_NAME"
+
+# 进入 dist/ 上一级目录，避免打包自己
 cd dist
-zip -r "$OUTPUT_NAME" arm64_ai_doll
+
+# 打包 arm64_ai_doll 目录（保持结构），输出在 dist 目录外
+zip -r "../$OUTPUT_NAME" arm64_ai_doll
+
+# 回到原目录
+cd ..
 
 echo ">>> ✅ 压缩完成：$(realpath $OUTPUT_NAME)"
 echo ">>> 📦 文件大小：$(du -sh $OUTPUT_NAME | cut -f1)"
+
