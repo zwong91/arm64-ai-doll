@@ -189,10 +189,11 @@ kill $(cat /path/to/pidfile.txt)
 #### 1.1 安装 PyInstaller
 首先，你需要安装 `PyInstaller`：
 ```bash
-pip install pyinstaller==5.13.2
+pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
+  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \

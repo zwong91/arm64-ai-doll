@@ -2,7 +2,7 @@ class Config:
     def __init__(self, 
                  asr_model='sensevoice',
                  tts_voice='vits-icefall-zh-aishell3',
-                 llm_model='minimind',
+                 llm_model='MiniMind2-Small',
                  input_device=None,  # 音频输入设备
                  output_device=None, # 音频输出设备
                  record_duration=5,
