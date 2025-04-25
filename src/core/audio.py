@@ -66,7 +66,7 @@ class AudioManager:
                 silence_counter += 1
                 recorded.append(chunk)
                 if silence_counter >= silence_chunks:
-                    print("检测到无声，录音结束")
+                    print("Detected silence, committing recording")
                     break
 
         return np.concatenate(recorded) if recorded else np.zeros(0)
