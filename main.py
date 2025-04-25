@@ -8,10 +8,6 @@ from src.core.llm import LocalLLMClient
 from src.core.audio import AudioManager
 from src.config.config import Config
 
-
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
 AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
 
 class VoiceAssistant:
@@ -75,7 +71,7 @@ class VoiceAssistant:
         print(f"Response saved to: {output_file}")
 
 
-class AudioFileHandler(FileSystemEventHandler):
+class AudioFileHandler():
     def __init__(self, assistant: VoiceAssistant, watch_dir: str):
         self.assistant = assistant 
         self.watch_dir = watch_dir
@@ -129,21 +125,6 @@ class AudioFileHandler(FileSystemEventHandler):
                 
             except Exception as e:
                 print(f"处理文件出错: {e}")
-
-def monitor_directory(path_to_watch, assistant: VoiceAssistant):
-    print(f"开始监听目录: {path_to_watch}")
-    event_handler = AudioFileHandler(assistant, path_to_watch)
-    observer = Observer()
-    observer.schedule(event_handler, path=path_to_watch, recursive=False)
-    observer.start()
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-        print("停止监听")
-    observer.join()
-    
 
 def main():
     parser = argparse.ArgumentParser(description='Voice Assistant')

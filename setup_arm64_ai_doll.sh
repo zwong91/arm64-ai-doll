@@ -66,14 +66,19 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.11.3/sherpa-onnx
 tar xvf sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
 rm sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
 
+pip install huggingface_hub
+
+
 echo ">>> 10. 下载 MiniMind 模型"
 git lfs install
 git clone https://huggingface.co/jingyaogong/MiniMind2-Small
+#HF_ENDPOINT=https://hf-mirror.com huggingface-cli download jingyaogong/MiniMind2-Small --local-dir MiniMind2-Small 
 rm -rf MiniMind2-Small/.git
 
 echo ">>> 11. 下载 Whisper 模型并整理目录"
 git lfs install
 git clone https://huggingface.co/Systran/faster-whisper-tiny
+#HF_ENDPOINT=https://hf-mirror.com huggingface-cli download Systran/faster-whisper-tiny --local-dir faster-whisper-tiny
 mkdir -p whisper_ckpt
 mv faster-whisper-tiny/* whisper_ckpt/
 
