@@ -171,7 +171,7 @@ python main.py -f input.wav --output-device "蓝牙耳机"
 ./arm64_ai_doll --list-devices
 ./arm64_ai_doll -i --input-device "麦克风<name or ID>" --output-device "扬声器<name or ID>"
 
-./arm64_ai_doll -i --input-device "default" --output-device "default"
+python main.py -i --input-device "default" --output-device "default"
 
 ```
 
