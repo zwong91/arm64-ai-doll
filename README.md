@@ -45,11 +45,11 @@ docker run -it --platform linux/arm64 arm64v8/debian:11-slim bash
 docker pull arm64v8/debian:10.13-slim
 
 docker ps
-docker exec -it 96991223cfe5 bash
+docker exec -it baf8769b0701 bash
 
 docker cp 96991223cfe5:/root/arm64-ai-doll/dist/arm64_ai_doll ./dist/
 docker run -it --platform linux/arm64 \
-  -v "$(pwd)/dist":/mnt/ \
+  -v "$(pwd)/out":/mnt/ \
   arm64v8/debian:11-slim \
   bash
 
@@ -74,6 +74,7 @@ apt update && apt install -y \
   wget \
   curl \
   git \
+  git-lfs \
   make \
   gcc \
   g++ \
@@ -159,6 +160,9 @@ docker ps  # 查找 container ID
 docker cp96991223cfe5:/root/arm64-ai-doll/dist ./
 ```
 
+pip uninstall -y numpy
+pip install "numpy<2"
+
 ---
 
 ## 使用方法
@@ -185,9 +189,9 @@ kill $(cat /path/to/pidfile.txt)
 #### 1.1 安装 PyInstaller
 首先，你需要安装 `PyInstaller`：
 ```bash
-pip install pyinstaller
+pip install pyinstaller==5.13.2
 
-pyinstaller --onefile --noupx --name arm64_ai_doll \
+pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
@@ -212,7 +216,7 @@ pyinstaller --onefile --noupx --name arm64_ai_doll \
 #### 1.2 创建可执行文件
 然后，使用以下命令将你的 `main.py` 文件打包成一个可执行文件：
 ```bash
-pyinstaller --onefile --clean --noupx --name arm64_ai_doll \
+pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \

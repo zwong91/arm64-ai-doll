@@ -1,16 +1,16 @@
-from dataclasses import dataclass
-
-@dataclass
 class Config:
-    # STT配置
-    asr_model: str = "whisper"
-    
-    # TTS配置
-    tts_voice: str = "vits-icefall-zh-aishell3"
-    
-    # LLM配置
-    llm_model: str = "MiniMind2-Small"
-    
-    # 音频配置
-    sample_rate: int = 16000
-    record_duration: int = 5
+    def __init__(self, 
+                 asr_model='sensevoice',
+                 tts_voice='vits-icefall-zh-aishell3',
+                 llm_model='minimind',
+                 input_device=None,  # 音频输入设备
+                 output_device=None, # 音频输出设备
+                 record_duration=5,
+                 sample_rate=16000):
+        self.asr_model = asr_model
+        self.tts_voice = tts_voice
+        self.llm_model = llm_model
+        self.input_device = input_device
+        self.output_device = output_device
+        self.record_duration = record_duration
+        self.sample_rate = sample_rate
