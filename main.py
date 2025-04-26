@@ -26,35 +26,10 @@ class VoiceAssistant:
             sample_rate=config.sample_rate
         )
 
-    def _apply_vad(self, samples):
-        sample_rate = self.config.sample_rate
-        #samples_per_read = int(0.1 * sample_rate)
-
-        vad_config = sherpa_onnx.VadModelConfig()
-        vad_config.silero_vad.model = self.config.vad_model
-        vad_config.sample_rate = sample_rate
-        window_size = vad_config.silero_vad.window_size
-
-        vad = sherpa_onnx.VoiceActivityDetector(vad_config, buffer_size_in_seconds=30)
-
-        buffer = np.array([], dtype=np.float32)
-        all_samples = samples
-        buffer = np.concatenate([buffer, samples[:, 0]])
-
-        while len(buffer) > window_size:
-            vad.accept_waveform(buffer[:window_size])
-            buffer = buffer[window_size:]
-
-        speech_samples = []
-        while not vad.empty():
-            speech_samples.extend(vad.front.samples)
-            vad.pop()
-
-        return np.array(speech_samples, dtype=np.float32), all_samples
-
     def process_conversation(self):
-        audio = self.audio.record_until_silence(self.config.vad_model)
-
+        audio = self.audio.record_until_silence(self.config.vad_model, self.config.record_duration)
+        print("VAD完成:", time.strftime("%H:%M:%S"))
+        all_start = time.time()
         if audio is None or len(audio) == 0:
             print("未检测到语音")
             return
@@ -62,32 +37,46 @@ class VoiceAssistant:
         print(f"录音长度: {len(audio) / self.config.sample_rate:.2f} 秒")
         print(f"最大音量: {np.max(np.abs(audio)):.4f}")
 
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_input:
-            self.audio.save(audio, temp_input.name, self.config.sample_rate)
-            text = self.stt.transcribe(temp_input.name)
-            response = self.llm.get_response(text)
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_output:
-                self.tts.synthesize(response, temp_output.name)
-                self.audio.play(temp_output.name)
-                os.unlink(temp_output.name)
+        start = time.time()
+        text = self.stt.transcribe(self.config.sample_rate, audio)
+        print(f"语音识别耗时: {time.time() - start:.2f}秒")
 
-            os.unlink(temp_input.name)
+        start = time.time()
+        response = self.llm.get_response(text)
+        print(f"LLM响应耗时: {time.time() - start:.2f}秒")
+
+        start = time.time()
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_output:
+            self.tts.synthesize(response, temp_output.name)
+            print(f"语音合成耗时: {time.time() - start:.2f}秒")
+
+            self.audio.play(temp_output.name)
+            os.unlink(temp_output.name)
+
+        print(f"总耗时(包括播放): {time.time() - all_start:.2f}秒")
+
 
     def process_audio_file(self, audio_file_path, output_dir="."):
-        start_time = time.time()
+        all_start = time.time()
 
+        start = time.time()
         text = self.stt.transcribe(audio_file_path)
-        print(f"语音识别耗时: {time.time() - start_time:.2f}秒")
+        print(f"语音识别耗时: {time.time() - start:.2f}秒")
         print(f"识别结果: {text}")
 
+        start = time.time()
         response = self.llm.get_response(text)
-        print(f"LLM响应耗时: {time.time() - start_time:.2f}秒")
+        print(f"LLM响应耗时: {time.time() - start:.2f}秒")
 
+        start = time.time()
         os.makedirs(output_dir, exist_ok=True)
         output_file = os.path.join(output_dir, "response.wav")
         self.tts.synthesize(response, output_file)
-        print(f"语音合成耗时: {time.time() - start_time:.2f}秒")
+        print(f"语音合成耗时: {time.time() - start:.2f}秒")
+
         print(f"Response saved to: {output_file}")
+        print(f"总耗时: {time.time() - all_start:.2f}秒")
+
 
 def main():
     parser = argparse.ArgumentParser(description='Voice Assistant')

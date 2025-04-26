@@ -1,3 +1,4 @@
-git lfs install
-git clone https://www.modelscope.cn/iic/SenseVoiceSmall.git
-mv SenseVoiceSmall/* sensevoice_ckpt/
+# Introduction
+
+This directory contains models converted from
+https://github.com/FunAudioLLM/SenseVoice

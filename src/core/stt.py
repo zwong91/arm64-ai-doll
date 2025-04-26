@@ -3,8 +3,10 @@ import os
 import re
 import torch
 from faster_whisper import WhisperModel
-# from funasr import AutoModel
-# from funasr.utils.postprocess_utils import rich_transcription_postprocess
+import sherpa_onnx
+
+import tempfile
+import soundfile as sf
 
 def resource_path(path: str) -> str:
     """返回资源文件的实际路径"""
@@ -39,18 +41,26 @@ class SpeechToText:
 
     def _init_sensevoice(self, kwargs):
         model_path = resource_path(kwargs.get("model_path", "sensevoice_ckpt"))
-        self.model = AutoModel(model=model_path, trust_remote_code=True, device=self.device, disable_update=True)
+        #self.model = AutoModel(model=model_path, trust_remote_code=True, device=self.device, disable_update=True)
+        self.model = sherpa_onnx.OfflineRecognizer.from_sense_voice(
+            model=str(model_path / "model.onnx"),
+            tokens=str(model_path / "tokens.txt"),
+            use_itn=True,
+            debug=True,
+        )
 
-    def transcribe(self, audio_file):
+    def transcribe(self, sample_rate, audio):
+        if audio.ndim == 2:
+            audio = audio[:, 0]
+
         if self.backend == "whisper":
-            segments, _ = self.model.transcribe(audio_file)
-            return " ".join([segment.text for segment in segments])
-        # elif self.backend == "sensevoice":
-        #     result = self.model.generate(
-        #         input=audio_file,
-        #         cache={},
-        #         language="auto",
-        #         use_itn=False,
-        #         batch_size=64
-        #     )[0]["text"].strip()
-        #     return remove_tags(result)
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as f:
+                sf.write(f.name, audio, sample_rate)
+                segments, _ = self.model.transcribe(f.name)
+            return " ".join([s.text for s in segments])
+
+        elif self.backend == "sensevoice":
+            stream = self.model.create_stream()
+            stream.accept_waveform(sample_rate, audio)
+            self.model.decode_stream(stream)
+            return stream.result

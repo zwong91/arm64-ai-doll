@@ -109,7 +109,7 @@ cd -
 
 echo "📦 Step 15: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
-  --add-data "whisper_ckpt:whisper_ckpt" \
+  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \

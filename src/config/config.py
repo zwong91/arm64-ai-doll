@@ -1,6 +1,6 @@
 class Config:
     def __init__(self, 
-                 asr_model='whisper',
+                 asr_model='sensevoice',
                  input_device=None,  # 音频输入设备
                  output_device=None, # 音频输出设备
                  vad_model="silero_vad.onnx",  # VAD 模型路径
@@ -15,4 +15,5 @@ class Config:
         self.tts_voice = tts_voice
         self.llm_model = llm_model
         self.record_duration = record_duration
+        self.silence_duration = 2.0
         self.sample_rate = sample_rate

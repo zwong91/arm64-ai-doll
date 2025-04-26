@@ -229,7 +229,7 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 然后，使用以下命令将你的 `main.py` 文件打包成一个可执行文件：
 ```bash
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
-  --add-data "whisper_ckpt:whisper_ckpt" \
+  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
@@ -269,10 +269,10 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-ice
 tar xvf vits-icefall-zh-aishell3.tar.bz2
 rm vits-icefall-zh-aishell3.tar.bz2
 
-
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.11.3/sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
-tar xvf sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
-rm sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
+tar xvf sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
+rm sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
+mv  sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/*  sensevoice_ckpt
 ```
 
 ## 项目结构

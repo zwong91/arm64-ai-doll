@@ -46,9 +46,8 @@ class TextToSpeech:
 
     def synthesize(self, text, output_file):
         """Convert text to speech using Sherpa-ONNX"""
-        print(f"[DEBUG] Using voice: {self.voice}")
-        print(f"[DEBUG] Using model directory: {self.model_dir}")
-        
+        #print(f"[DEBUG] Using voice: {self.voice}")
+        #print(f"[DEBUG] Using model directory: {self.model_dir}")
         if self.backend == "sherpa-onnx":
             self._synthesize_sherpa_onnx(text, output_file)
         else:
@@ -142,9 +141,9 @@ class TextToSpeech:
                 subtype="PCM_16",
             )
 
-            print(f"Saved to {output_file}")
-            print(f"Text: '{text}'")
-            print(f"Elapsed: {elapsed_seconds:.3f}s")
+            #print(f"Saved to {output_file}")
+            #print(f"Text: '{text}'")
+            #print(f"Elapsed: {elapsed_seconds:.3f}s")
             print(f"Audio duration: {audio_duration:.3f}s")
             print(f"RTF: {elapsed_seconds:.3f}/{audio_duration:.3f} = {real_time_factor:.3f}")
 
