@@ -4,11 +4,12 @@ import time
 import noisereduce as nr
 import sherpa_onnx
 
+from ..utils.resource_utils import resource_path
 class Recorder:
     def __init__(self, sample_rate=16000, input_device=None, vad_model_path="vad_ckpt/silero_vad.onnx"):
         self.sample_rate = sample_rate
         self.input_device = input_device
-        self.vad_model_path = vad_model_path
+        self.vad_model_path = resource_path(vad_model_path)
         if self.input_device is None:
             self.input_device = sd.default.device[0]
         # 初始化VAD

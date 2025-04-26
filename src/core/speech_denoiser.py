@@ -9,13 +9,7 @@ from typing import Tuple
 
 import numpy as np
 
-def resource_path(path: str) -> str:
-    """返回资源文件的实际路径"""
-    if os.path.isabs(path):
-        return path
-    base_path = getattr(sys, "_MEIPASS", None) or os.path.abspath(".")
-    return os.path.join(base_path, path)
-
+from ..utils.resource_utils import resource_path
 
 class SpeechEnhancer:
     def __init__(self, model_path: str = "speech-enhancement/gtcrn_simple.onnx", device: str = "cpu", **kwargs):

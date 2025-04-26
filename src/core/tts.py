@@ -9,11 +9,7 @@ import sherpa_onnx
 import soundfile as sf
 import sounddevice as sd
 
-def resource_path(path: str) -> str:
-    if os.path.isabs(path):
-        return path
-    base_path = getattr(sys, "_MEIPASS", None) or os.path.abspath(".")
-    return os.path.join(base_path, path)
+from ..utils.resource_utils import resource_path
 
 
 buffer = queue.Queue()

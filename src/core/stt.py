@@ -8,12 +8,7 @@ import sherpa_onnx
 import tempfile
 import soundfile as sf
 
-def resource_path(path: str) -> str:
-    """返回资源文件的实际路径"""
-    if os.path.isabs(path):
-        return path
-    base_path = getattr(sys, "_MEIPASS", None) or os.path.abspath(".")
-    return os.path.join(base_path, path)
+from src.utils.resource_utils import resource_path
 
 def remove_tags(text: str) -> str:
     return re.sub(r"<\|.*?\|>", "", text)
