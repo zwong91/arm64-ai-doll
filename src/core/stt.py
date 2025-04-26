@@ -43,8 +43,10 @@ class SpeechToText:
         model_path = resource_path(kwargs.get("model_path", "sensevoice_ckpt"))
         #self.model = AutoModel(model=model_path, trust_remote_code=True, device=self.device, disable_update=True)
         self.model = sherpa_onnx.OfflineRecognizer.from_sense_voice(
-            model=str(model_path / "model.onnx"),
+            model=str(model_path / "model.int8.onnx"),
             tokens=str(model_path / "tokens.txt"),
+            num_threads = 1,
+            language="zh", #auto, zh, en, ko, ja, and yue
             use_itn=True,
             debug=True,
         )
