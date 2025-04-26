@@ -86,9 +86,9 @@ def stop_playback():
 
 class TextToSpeech:
     def __init__(self, 
-                 model_dir="vits-icefall-zh-aishell3",  
+                 model_dir="kokoro-multi-lang-v1_0",  
                  backend="sherpa-onnx",
-                 voice="zh-cn",   
+                 voice="af_alloy",   
                  speed=1.2,       
         ):
         self.backend = backend
@@ -100,6 +100,15 @@ class TextToSpeech:
         self.model_dir = real_path
         if not os.path.isdir(self.model_dir):
             raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
+
+    def _merge_lexicons(self, lexicon_paths):
+        merged_path = "/tmp/merged_lexicon.txt"
+        with open(merged_path, "w", encoding="utf-8") as fout:
+            for p in lexicon_paths:
+                with open(p, "r", encoding="utf-8") as fin:
+                    fout.write(fin.read())
+                    fout.write("\n")
+        return merged_path
 
     def synthesize(self, text, output_file):
         if self.backend == "sherpa-onnx":
@@ -129,12 +138,15 @@ class TextToSpeech:
                 "rule_fsts": [],
             }
 
+            lexicons = []
             for file in os.listdir(self.model_dir):
                 file_path = os.path.join(self.model_dir, file)
                 if file.endswith(".onnx"):
                     model_files["model"] = file_path
-                elif file == "lexicon.txt":
-                    model_files["lexicon"] = file_path
+                elif file == "voices.bin":
+                    model_files["kokoro_voices"] = file_path
+                elif file.startswith("lexicon") and file.endswith(".txt"):
+                    lexicons.append(file_path)
                 elif file == "tokens.txt":
                     model_files["tokens"] = file_path
                 elif os.path.isdir(file_path) and file == "dict":
@@ -145,15 +157,18 @@ class TextToSpeech:
             if not model_files["model"]:
                 raise FileNotFoundError("未找到ONNX模型文件")
 
+            # 拼接多个lexicon路径
+            model_files["lexicon"] = self._merge_lexicons(lexicons)
             provider = detect_provider()
-            sid = 103
+            sid = 1 #alloy
             num_threads = os.cpu_count()
             rule_fsts = ",".join(model_files["rule_fsts"]) if model_files["rule_fsts"] else ""
 
             tts_config = sherpa_onnx.OfflineTtsConfig(
                 model=sherpa_onnx.OfflineTtsModelConfig(
-                    vits=sherpa_onnx.OfflineTtsVitsModelConfig(
+                    kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
                         model=model_files["model"],
+                        voices=model_files["kokoro_voices"],
                         lexicon=model_files["lexicon"],
                         dict_dir=model_files["dict_dir"] or '',
                         tokens=model_files["tokens"],

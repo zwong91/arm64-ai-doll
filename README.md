@@ -196,7 +196,7 @@ pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "whisper_ckpt:whisper_ckpt" \
-  --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
+  --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --collect-binaries sounddevice \
@@ -230,7 +230,7 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 ```bash
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
-  --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
+  --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --collect-binaries sounddevice \
@@ -265,9 +265,9 @@ if __name__ == "__main__":
 
 ### models
 ```
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-icefall-zh-aishell3.tar.bz2
-tar xvf vits-icefall-zh-aishell3.tar.bz2
-rm vits-icefall-zh-aishell3.tar.bz2
+curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2
+tar xf kokoro-multi-lang-v1_0.tar.bz2
+rm kokoro-multi-lang-v1_0.tar.bz2
 
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
 tar xvf sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2

@@ -57,9 +57,9 @@ pip uninstall -y numpy
 pip install "numpy<2"
 
 echo ">>> 8. 下载语音合成模型 (TTS)"
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-icefall-zh-aishell3.tar.bz2
-tar xvf vits-icefall-zh-aishell3.tar.bz2
-rm vits-icefall-zh-aishell3.tar.bz2
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2
+tar xvf kokoro-multi-lang-v1_0.tar.bz2
+rm kokoro-multi-lang-v1_0.tar.bz2
 
 echo ">>> 9. 下载 Sherpa ONNX 推理库"
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.11.3/sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
@@ -110,7 +110,7 @@ cd -
 echo "📦 Step 15: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
-  --add-data "vits-icefall-zh-aishell3:vits-icefall-zh-aishell3" \
+  --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --add-binary "/usr/local/lib/libportaudio.so.2:." \

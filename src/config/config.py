@@ -4,7 +4,7 @@ class Config:
                  input_device=None,  # 音频输入设备
                  output_device=None, # 音频输出设备
                  vad_model="silero_vad.onnx",  # VAD 模型路径
-                 tts_voice='vits-icefall-zh-aishell3',
+                 tts_voice='kokoro-multi-lang-v1_0',
                  llm_model='MiniMind2-Small',
                  record_duration=5,
                  sample_rate=16000):
