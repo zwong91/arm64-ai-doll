@@ -291,3 +291,14 @@ src/
 - 语音合成 (sherpa-onnx)
 - 实时录音对话
   
+
+  ## Q & A
+  Traceback (most recent call last):
+  File "/mnt/sdb/shared/sherpa-onnx/./python-api-examples/vad-microphone.py", line 8, in <module>
+    import sounddevice as sd
+  File "/mnt/sdb/shared/py311/lib/python3.11/site-packages/sounddevice.py", line 71, in <module>
+    raise OSError('PortAudio library not found')
+OSError: PortAudio library not found
+Then please run:
+
+sudo apt-get install libportaudio2
