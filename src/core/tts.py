@@ -101,15 +101,6 @@ class TextToSpeech:
         if not os.path.isdir(self.model_dir):
             raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
 
-    def _merge_lexicons(self, lexicon_paths):
-        merged_path = "/tmp/merged_lexicon.txt"
-        with open(merged_path, "w", encoding="utf-8") as fout:
-            for p in lexicon_paths:
-                with open(p, "r", encoding="utf-8") as fin:
-                    fout.write(fin.read())
-                    fout.write("\n")
-        return merged_path
-
     def synthesize(self, text, output_file):
         if self.backend == "sherpa-onnx":
             self._synthesize_sherpa_onnx(text, output_file)
@@ -145,10 +136,12 @@ class TextToSpeech:
                     model_files["model"] = file_path
                 elif file == "voices.bin":
                     model_files["kokoro_voices"] = file_path
-                elif file.startswith("lexicon") and file.endswith(".txt"):
+                elif file == "lexicon-us-en.txt" or file == "lexicon-zh.txt":
                     lexicons.append(file_path)
                 elif file == "tokens.txt":
                     model_files["tokens"] = file_path
+                elif os.path.isdir(file_path) and file == "espeak-ng-data":
+                    model_files["data_dir"] = file_path
                 elif os.path.isdir(file_path) and file == "dict":
                     model_files["dict_dir"] = file_path
                 elif file.endswith(".fst"):
@@ -158,9 +151,9 @@ class TextToSpeech:
                 raise FileNotFoundError("未找到ONNX模型文件")
 
             # 拼接多个lexicon路径
-            model_files["lexicon"] = self._merge_lexicons(lexicons)
+            model_files["lexicon"] = ",".join(lexicons)
             provider = detect_provider()
-            sid = 1 #alloy
+            sid = 18
             num_threads = os.cpu_count()
             rule_fsts = ",".join(model_files["rule_fsts"]) if model_files["rule_fsts"] else ""
 
@@ -169,9 +162,10 @@ class TextToSpeech:
                     kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
                         model=model_files["model"],
                         voices=model_files["kokoro_voices"],
-                        lexicon=model_files["lexicon"],
-                        dict_dir=model_files["dict_dir"] or '',
                         tokens=model_files["tokens"],
+                        lexicon=model_files["lexicon"],
+                        data_dir=model_files["data_dir"] or '',
+                        dict_dir=model_files["dict_dir"] or '',
                         length_scale=self.speed,
                     ),
                     provider=provider,
