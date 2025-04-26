@@ -46,7 +46,7 @@ class SpeechToText:
             model=str(model_path / "model.int8.onnx"),
             tokens=str(model_path / "tokens.txt"),
             num_threads = 1,
-            language="zh", #auto, zh, en, ko, ja, and yue
+            language="auto", #auto, zh, en, ko, ja, and yue
             use_itn=True,
             debug=True,
         )
