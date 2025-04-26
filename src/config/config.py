@@ -9,6 +9,7 @@ class Config:
                  record_duration=5,
                  sample_rate=16000):
         self.asr_model = asr_model
+        self.denoiser_model = "speech-enhancement/gtcrn_simple.onnx"
         self.vad_model = vad_model
         self.input_device = input_device
         self.output_device = output_device

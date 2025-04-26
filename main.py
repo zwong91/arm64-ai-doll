@@ -9,14 +9,15 @@ from src.core.stt import SpeechToText
 from src.core.tts import TextToSpeech
 from src.core.llm import LocalLLMClient
 from src.core.audio import AudioManager
+from src.core.speech_denoiser import SpeechEnhancer
 from src.config.config import Config
-import sherpa_onnx
 
 AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
 
 class VoiceAssistant:
     def __init__(self, config: Config):
         self.config = config
+        self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
         self.stt = SpeechToText(config.asr_model)
         self.tts = TextToSpeech(config.tts_voice)
         self.llm = LocalLLMClient(config.llm_model)
@@ -36,9 +37,12 @@ class VoiceAssistant:
 
         print(f"录音长度: {len(audio) / self.config.sample_rate:.2f} 秒")
         print(f"最大音量: {np.max(np.abs(audio)):.4f}")
-
+        enhanced_audio = self.speech_enhancer.enhance(audio, self.config.sample_rate)
+        print(f"增强音频长度: {len(enhanced_audio) / self.config.sample_rate:.2f} 秒")
+        print(f"增强最大音量: {np.max(np.abs(enhanced_audio)):.4f}")
         start = time.time()
-        text = self.stt.transcribe(self.config.sample_rate, audio)
+        enhanced_audio = np.asarray(enhanced_audio)
+        text = self.stt.transcribe(self.config.sample_rate, enhanced_audio)
         print(f"语音识别耗时: {time.time() - start:.2f}秒")
 
         start = time.time()
