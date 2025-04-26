@@ -3,6 +3,7 @@ ctranslate2==4.4.0
 funasr==1.2.6
 sounddevice
 soundfile
+noisereduce
 langid
 jieba==0.42.1
 jsonlines==4.0.0

@@ -8,7 +8,7 @@ import soundfile as sf
 from src.core.stt import SpeechToText
 from src.core.tts import TextToSpeech
 from src.core.llm import LocalLLMClient
-from src.core.audio import AudioManager
+from src.core.recorder import Recorder
 from src.core.speech_denoiser import SpeechEnhancer
 from src.config.config import Config
 import langid
@@ -20,14 +20,13 @@ class VoiceAssistant:
         self.stt = SpeechToText(config.asr_model)
         self.tts = TextToSpeech(config.tts_voice)
         self.llm = LocalLLMClient(config.llm_model)
-        self.audio = AudioManager(
+        self.recorder = Recorder(
+            sample_rate=config.sample_rate,
             input_device=config.input_device,
-            output_device=config.output_device,
-            sample_rate=config.sample_rate
         )
 
     def process_conversation(self):
-        audio = self.audio.record_until_silence(self.config.vad_model, self.config.record_duration)
+        audio = self.recorder.record_until_silence(self.config.vad_model, self.config.record_duration)
         print("VAD完成:", time.strftime("%H:%M:%S"))
         all_start = time.time()
         if audio is None or len(audio) == 0:
@@ -36,12 +35,21 @@ class VoiceAssistant:
 
         print(f"录音长度: {len(audio) / self.config.sample_rate:.2f} 秒")
         print(f"最大音量: {np.max(np.abs(audio)):.4f}")
-        enhanced_audio = self.speech_enhancer.enhance(audio, self.config.sample_rate)
-        print(f"增强音频长度: {len(enhanced_audio) / self.config.sample_rate:.2f} 秒")
-        print(f"增强最大音量: {np.max(np.abs(enhanced_audio)):.4f}")
+        # enhanced_audio = self.speech_enhancer.enhance(audio, self.config.sample_rate)
+        # print(f"增强音频长度: {len(enhanced_audio) / self.config.sample_rate:.2f} 秒")
+        # print(f"增强最大音量: {np.max(np.abs(enhanced_audio)):.4f}")
+        # enhanced_audio = np.asarray(enhanced_audio)
+
+        filename_for_speech = time.strftime("%Y%m%d-%H%M%S-speech.wav")
+        sf.write(filename_for_speech, audio, samplerate=self.config.sample_rate)
+
+        # filename_for_all = time.strftime("%Y%m%d-%H%M%S-enhanced.wav")
+        # sf.write(filename_for_all, enhanced_audio, samplerate=self.config.sample_rate)
+
+        print(f"Saved to {filename_for_speech}")
+        # 语音识别
         start = time.time()
-        enhanced_audio = np.asarray(enhanced_audio)
-        text = self.stt.transcribe(self.config.sample_rate, enhanced_audio)    
+        text = self.stt.transcribe(self.config.sample_rate, audio)    
         language = langid.classify(text)[0].strip().lower()
         if language in ('zh', 'en'):
             print(f"Language detected: {language}")
