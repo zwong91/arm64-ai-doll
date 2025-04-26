@@ -3,6 +3,9 @@ import sys
 import subprocess
 import numpy as np
 
+import sherpa_onnx
+import soundfile as sf
+
 def resource_path(path: str) -> str:
     """
     返回运行时可以访问到的绝对路径：
@@ -18,6 +21,7 @@ def resource_path(path: str) -> str:
     base_path = getattr(sys, "_MEIPASS", None) or os.path.abspath(".")
     return os.path.join(base_path, path)
 
+
 class TextToSpeech:
     def __init__(self, 
                  model_dir="vits-icefall-zh-aishell3",  # Path to the Sherpa-ONNX TTS model directory
@@ -29,8 +33,6 @@ class TextToSpeech:
         self.backend = backend
         self.voice = voice
         self.speed = speed
-        self.noise_scale = 0.5,
-        self.noise_scale_w = 0.6,
         
         real_path = resource_path(model_dir)
         # Path to the model directory is required for Sherpa-ONNX
@@ -53,21 +55,29 @@ class TextToSpeech:
             raise ValueError(f"Unsupported backend: {self.backend}")
 
     def _synthesize_sherpa_onnx(self, text, output_file):
-        """Generate speech using Sherpa-ONNX"""
+        """使用 Sherpa-ONNX API 生成语音"""
+        import torch
+        import platform
+        import time
+
+        def detect_provider():
+            system = platform.system().lower()
+            if system == "darwin":
+                return "coreml"
+            elif torch.cuda.is_available():
+                return "cuda"
+            else:
+                return "cpu"
+
         try:
-            # Path to the Sherpa-ONNX TTS binary
-            sherpa_onnx_bin = "sherpa-onnx-offline-tts"
-            #os.chmod(sherpa_onnx_bin, 0o755)  # 确保可执行           
-            # Find model files in the model directory
             model_files = {
                 "model": None,
                 "lexicon": None,
                 "tokens": None,
                 "dict_dir": None,
-                "rule_fsts": [],  # 存储规则文件
+                "rule_fsts": [],
             }
-            
-            # Look for model files with common names
+
             for file in os.listdir(self.model_dir):
                 file_path = os.path.join(self.model_dir, file)
                 if file.endswith(".onnx"):
@@ -76,53 +86,72 @@ class TextToSpeech:
                     model_files["lexicon"] = file_path
                 elif file == "tokens.txt":
                     model_files["tokens"] = file_path
-                elif os.path.isdir(file_path) and file == "dict":  # 查找 dict 子目录
+                elif os.path.isdir(file_path) and file == "dict":
                     model_files["dict_dir"] = file_path
-                elif file.endswith(".fst"):  # 查找 .fst 文件
+                elif file.endswith(".fst"):
                     model_files["rule_fsts"].append(file_path)
-            
-            # Check if required files are found
+
             if not model_files["model"]:
-                raise FileNotFoundError(f"No ONNX model file found in {self.model_dir}")
-            
-            # 设置sid和其他TTS相关的参数
-            sid = 103  # 说话人ID
+                raise FileNotFoundError("未找到ONNX模型文件")
+
+            provider = detect_provider()
+            sid = 103
             num_threads = os.cpu_count()
-            # 动态生成 rule_fsts 参数
             rule_fsts = ",".join(model_files["rule_fsts"]) if model_files["rule_fsts"] else ""
 
-            # Build the command with appropriate arguments for Sherpa-ONNX
-            cmd = [
-                sherpa_onnx_bin,
-                f"--vits-model={model_files['model']}",
-                f"--vits-lexicon={model_files['lexicon']}",
-                f"--vits-tokens={model_files['tokens']}",
-                f"--tts-rule-fsts={rule_fsts}",  # 添加规则文件参数
-                f"--vits-length-scale={self.speed}",  # 可变语速
-                f"--sid={sid}",
-                f"--num-threads={num_threads}",
-                f"--output-filename={output_file}",
-                f"{text}",
-            ]
-            # Execute the command
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                check=True
+            tts_config = sherpa_onnx.OfflineTtsConfig(
+                model=sherpa_onnx.OfflineTtsModelConfig(
+                    vits=sherpa_onnx.OfflineTtsVitsModelConfig(
+                        model=model_files["model"],
+                        lexicon=model_files["lexicon"],
+                        #data_dir=self.model_dir,
+                        dict_dir=model_files["dict_dir"] or '',
+                        tokens=model_files["tokens"],
+                        length_scale=self.speed,  # 设置语速
+                    ),
+                    provider=provider,
+                    debug=False,
+                    num_threads=num_threads,
+                ),
+                rule_fsts=rule_fsts,
+                max_num_sentences=1,
             )
-            
-            print(f"[INFO] Sherpa-ONNX TTS completed successfully")
-            
-        except subprocess.CalledProcessError as e:
-            print(f"[ERROR] Sherpa-ONNX TTS failed: {e}")
-            print(f"[ERROR] stdout: {e.stdout}")
-            print(f"[ERROR] stderr: {e.stderr}")
-            raise
-            
+
+            if not tts_config.validate():
+                raise ValueError("TTS 配置无效，请检查模型文件")
+
+            tts = sherpa_onnx.OfflineTts(tts_config)
+
+            # TODO: tts playback
+            start = time.time()
+            audio = tts.generate(text, sid=sid, speed=self.speed)
+            end = time.time()
+
+            if len(audio.samples) == 0:
+                print("生成失败，无音频")
+                return
+
+            elapsed_seconds = end - start
+            audio_duration = len(audio.samples) / audio.sample_rate
+            real_time_factor = elapsed_seconds / audio_duration
+
+            sf.write(
+                output_file,
+                audio.samples,
+                samplerate=audio.sample_rate,
+                subtype="PCM_16",
+            )
+
+            print(f"Saved to {output_file}")
+            print(f"Text: '{text}'")
+            print(f"Elapsed: {elapsed_seconds:.3f}s")
+            print(f"Audio duration: {audio_duration:.3f}s")
+            print(f"RTF: {elapsed_seconds:.3f}/{audio_duration:.3f} = {real_time_factor:.3f}")
+
         except Exception as e:
-            print(f"[ERROR] Failed to generate speech: {e}")
+            print(f"[ERROR] 合成失败: {e}")
             raise
+
 
 # Example usage:
 if __name__ == "__main__":

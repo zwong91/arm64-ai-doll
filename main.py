@@ -65,11 +65,7 @@ class VoiceAssistant:
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_input:
             self.audio.save(audio, temp_input.name, self.config.sample_rate)
             text = self.stt.transcribe(temp_input.name)
-            print(f"You said: {text}")
-
             response = self.llm.get_response(text)
-            print(f"AI response: {response}")
-
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_output:
                 self.tts.synthesize(response, temp_output.name)
                 self.audio.play(temp_output.name)
