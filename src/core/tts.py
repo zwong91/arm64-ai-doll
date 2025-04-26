@@ -27,7 +27,7 @@ class TextToSpeech:
                  model_dir="vits-icefall-zh-aishell3",  # Path to the Sherpa-ONNX TTS model directory
                  backend="sherpa-onnx",
                  voice="zh-cn",   # Language/voice code
-                 speed=0.8,       # Speaking rate (1.0 is normal speed)
+                 speed=1.2,       # Speaking rate (1.0 is normal speed)
         ):
 
         self.backend = backend
