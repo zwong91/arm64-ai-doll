@@ -55,10 +55,10 @@ class VoiceAssistant:
             print(f"语音合成耗时: {time.time() - start:.2f}秒")
 
             # TODO: 可打断
-            self.audio.play(temp_output.name)
+            #self.audio.play(temp_output.name)
             os.unlink(temp_output.name)
 
-        print(f"总耗时(包括播放): {time.time() - all_start:.2f}秒")
+        print(f"总耗时: {time.time() - all_start:.2f}秒")
 
 
     def process_audio_file(self, audio_file_path, output_dir="."):

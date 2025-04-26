@@ -1,63 +1,115 @@
 import os
 import sys
-import subprocess
-import numpy as np
+import queue
+import threading
+import time
 
+import numpy as np
 import sherpa_onnx
 import soundfile as sf
+import sounddevice as sd
 
 def resource_path(path: str) -> str:
-    """
-    返回运行时可以访问到的绝对路径：
-    1) 如果用户传入的是绝对路径，就直接返回；
-    2) 否则在打包后，从 sys._MEIPASS 里找（PyInstaller onefile）；
-    3) 平时开发环境，就从当前工作目录找（os.path.abspath(".")）。
-    """
-    # 如果已经是绝对路径，直接返回
     if os.path.isabs(path):
         return path
-
-    # 打包运行时，PyInstaller 会把所有资源解压到这里
     base_path = getattr(sys, "_MEIPASS", None) or os.path.abspath(".")
     return os.path.join(base_path, path)
 
 
+buffer = queue.Queue()
+started = False
+stopped = False
+killed = False
+sample_rate = None
+event = threading.Event()
+first_message_time = None
+play_thread_started = False
+play_thread_lock = threading.Lock()
+
+
+def generated_audio_callback(samples: np.ndarray, progress: float):
+    global started, first_message_time
+    if first_message_time is None:
+        first_message_time = time.time()
+    buffer.put(samples)
+    if not started:
+        print("Start playing ...")
+        started = True
+    return 0 if killed else 1
+
+
+def play_audio_callback(outdata: np.ndarray, frames: int, time, status: sd.CallbackFlags):
+    if killed:
+        event.set()
+
+    if buffer.empty():
+        outdata.fill(0)
+        return
+
+    n = 0
+    while n < frames and not buffer.empty():
+        remaining = frames - n
+        k = buffer.queue[0].shape[0]
+
+        if remaining <= k:
+            outdata[n:, 0] = buffer.queue[0][:remaining]
+            buffer.queue[0] = buffer.queue[0][remaining:]
+            n = frames
+            if buffer.queue[0].shape[0] == 0:
+                buffer.get()
+            break
+
+        outdata[n : n + k, 0] = buffer.get()
+        n += k
+
+    if n < frames:
+        outdata[n:, 0] = 0
+
+
+def play_audio():
+    with sd.OutputStream(
+        channels=1,
+        callback=play_audio_callback,
+        dtype="float32",
+        samplerate=sample_rate,
+        blocksize=1024,
+    ):
+        event.wait()
+    print("Exiting ...")
+
+
+def stop_playback():
+    global killed
+    killed = True
+    event.set()
+
+
 class TextToSpeech:
     def __init__(self, 
-                 model_dir="vits-icefall-zh-aishell3",  # Path to the Sherpa-ONNX TTS model directory
+                 model_dir="vits-icefall-zh-aishell3",  
                  backend="sherpa-onnx",
-                 voice="zh-cn",   # Language/voice code
-                 speed=1.2,       # Speaking rate (1.0 is normal speed)
+                 voice="zh-cn",   
+                 speed=1.2,       
         ):
-
         self.backend = backend
         self.voice = voice
         self.speed = speed
-        
         real_path = resource_path(model_dir)
-        # Path to the model directory is required for Sherpa-ONNX
         if real_path is None:
-            raise ValueError("model_dir must be specified for Sherpa-ONNX backend")
+            raise ValueError("model_dir must be specified")
         self.model_dir = real_path
-
-        # Validate model directory exists
         if not os.path.isdir(self.model_dir):
             raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
 
     def synthesize(self, text, output_file):
-        """Convert text to speech using Sherpa-ONNX"""
-        #print(f"[DEBUG] Using voice: {self.voice}")
-        #print(f"[DEBUG] Using model directory: {self.model_dir}")
         if self.backend == "sherpa-onnx":
             self._synthesize_sherpa_onnx(text, output_file)
         else:
             raise ValueError(f"Unsupported backend: {self.backend}")
 
     def _synthesize_sherpa_onnx(self, text, output_file):
-        """使用 Sherpa-ONNX API 生成语音"""
         import torch
         import platform
-        import time
 
         def detect_provider():
             system = platform.system().lower()
@@ -103,10 +155,9 @@ class TextToSpeech:
                     vits=sherpa_onnx.OfflineTtsVitsModelConfig(
                         model=model_files["model"],
                         lexicon=model_files["lexicon"],
-                        #data_dir=self.model_dir,
                         dict_dir=model_files["dict_dir"] or '',
                         tokens=model_files["tokens"],
-                        length_scale=self.speed,  # 设置语速
+                        length_scale=self.speed,
                     ),
                     provider=provider,
                     debug=False,
@@ -121,10 +172,22 @@ class TextToSpeech:
 
             tts = sherpa_onnx.OfflineTts(tts_config)
 
-            # TODO: tts playback
+            global sample_rate, play_thread_started, started, stopped
+            sample_rate = tts.sample_rate
+            started = False
+            stopped = False
+
+            with play_thread_lock:
+                if not play_thread_started:
+                    threading.Thread(target=play_audio, daemon=True).start()
+                    play_thread_started = True
+
             start = time.time()
-            audio = tts.generate(text, sid=sid, speed=self.speed)
+            audio = tts.generate(text, sid=sid, speed=self.speed,
+                                 callback=generated_audio_callback,)
             end = time.time()
+
+            stopped = True
 
             if len(audio.samples) == 0:
                 print("生成失败，无音频")
@@ -141,9 +204,6 @@ class TextToSpeech:
                 subtype="PCM_16",
             )
 
-            #print(f"Saved to {output_file}")
-            #print(f"Text: '{text}'")
-            #print(f"Elapsed: {elapsed_seconds:.3f}s")
             print(f"Audio duration: {audio_duration:.3f}s")
             print(f"RTF: {elapsed_seconds:.3f}/{audio_duration:.3f} = {real_time_factor:.3f}")
 
@@ -152,16 +212,16 @@ class TextToSpeech:
             raise
 
 
-# Example usage:
 if __name__ == "__main__":
-    # Initialize the TTS with Sherpa-ONNX
     tts = TextToSpeech(
         backend="sherpa-onnx",
         model_dir="/path/to/sherpa-onnx/models",
-        voice="zh-cn",   # Chinese language
-        speed=1.0,       # Normal speed
-        volume=1.0       # Normal volume
+        voice="zh-cn",
+        speed=1.0,
     )
-    
-    # Generate speech
-    tts.synthesize("你好，世界！", "output.wav")
+
+    try:
+        tts.synthesize("你好，世界！", "output.wav")
+        tts.synthesize("欢迎使用语音合成系统。", "output2.wav")
+    finally:
+        stop_playback()
