@@ -11,8 +11,7 @@ from src.core.llm import LocalLLMClient
 from src.core.audio import AudioManager
 from src.core.speech_denoiser import SpeechEnhancer
 from src.config.config import Config
-
-AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
+import langid
 
 class VoiceAssistant:
     def __init__(self, config: Config):
@@ -42,7 +41,14 @@ class VoiceAssistant:
         print(f"增强最大音量: {np.max(np.abs(enhanced_audio)):.4f}")
         start = time.time()
         enhanced_audio = np.asarray(enhanced_audio)
-        text = self.stt.transcribe(self.config.sample_rate, enhanced_audio)
+        text = self.stt.transcribe(self.config.sample_rate, enhanced_audio)    
+        language = langid.classify(text)[0].strip().lower()
+        if language in ('zh', 'en'):
+            print(f"Language detected: {language}")
+        else:
+            print(f"Unsupported language: {language}")
+            return
+
         print(f"语音识别耗时: {time.time() - start:.2f}秒")
 
         start = time.time()
