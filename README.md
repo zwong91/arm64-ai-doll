@@ -195,7 +195,8 @@ kill $(cat /path/to/pidfile.txt)
 pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
-  --add-data "whisper_ckpt:whisper_ckpt" \
+  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
+  --add-data "speech-enhancement:speech-enhancement" \
   --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
