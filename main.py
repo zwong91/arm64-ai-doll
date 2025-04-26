@@ -54,6 +54,7 @@ class VoiceAssistant:
             self.tts.synthesize(response, temp_output.name)
             print(f"语音合成耗时: {time.time() - start:.2f}秒")
 
+            # TODO: 可打断
             self.audio.play(temp_output.name)
             os.unlink(temp_output.name)
 

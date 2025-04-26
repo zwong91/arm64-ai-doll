@@ -9,6 +9,7 @@ class AudioManager:
         self.input_device = input_device
         self.output_device = output_device
         self.sample_rate = sample_rate
+        self._playing = False
 
     @staticmethod
     def list_devices():
@@ -85,8 +86,9 @@ class AudioManager:
 
     def play(self, filename):
         data, sr = sf.read(filename)
+        self._playing = True
         sd.play(data, sr, device=self.output_device)
-        sd.wait()
 
-    def save(self, data, filename, sample_rate):
-        sf.write(filename, data, sample_rate)
+    def stop(self):
+        self._playing = False
+        sd.stop()
