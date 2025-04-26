@@ -302,3 +302,35 @@ OSError: PortAudio library not found
 Then please run:
 
 sudo apt-get install libportaudio2
+
+这个 `libportaudio2` 是 **PortAudio** 动态库，  
+通常是系统装的，不太有直接“纯离线包”或者“官方静态版”。
+
+不过你有几个方法可以搞定离线安装：
+
+---
+
+✅ 1. **下载 `.deb` 包离线安装**  
+在联网机器上运行：
+
+```bash
+apt download libportaudio2
+```
+然后把 `.deb` 文件复制到离线机：
+
+```bash
+sudo dpkg -i libportaudio2_*.deb
+```
+
+---
+
+✅ 2. **自己编译 PortAudio 静态库**  
+如果你想要更极限（不用系统库），可以自己编译：
+
+```bash
+git clone https://github.com/PortAudio/portaudio.git
+cd portaudio
+./configure
+make
+sudo make install
+```
