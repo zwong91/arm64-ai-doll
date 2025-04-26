@@ -23,11 +23,12 @@ class VoiceAssistant:
         self.recorder = Recorder(
             sample_rate=config.sample_rate,
             input_device=config.input_device,
+            vad_model_path=config.vad_model
         )
 
     def process_conversation(self):
-        audio = self.recorder.record_until_silence(self.config.vad_model, self.config.silence_duration)
-        print("VAD完成:", time.strftime("%H:%M:%S"))
+        audio = self.recorder.record_until_silence(self.config.silence_duration)
+        print("VAD检测完成:", time.strftime("%H:%M:%S"))
         all_start = time.time()
         if audio is None or len(audio) == 0:
             print("未检测到语音")
