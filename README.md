@@ -2,7 +2,9 @@
 
 # 语音助手
 
-基于 fast-whisper、Minimind 和 sherpa-onnx 的语音助手系统。
+基于 fast-whisper、Minimind 和 sherpa-onnx 的离线本地语音助手系统。
+支持流式的关键词唤醒KWS和语音识别ASR、文本转语音TTS、热词Hotwords等，且整个过程中无需互联网，可以没有GPU，
+建议有3TOPS 的 TPU, 适合部署在边缘侧/用户侧设备上。
 
 ## 安装
 ## 🐳 使用 Docker 构建 ARM64 虚拟环境（macOS M1/M2）
@@ -290,10 +292,24 @@ src/
 - 语音识别 (fast-whisper)
 - 自然语言处理 (MiniMind)
 - 语音合成 (sherpa-onnx)
-- 实时录音对话
-  
+- 实时录音流对话
 
-  ## Q & A
+
+关键词检测：https://k2-fsa.github.io/sherpa/onnx/kws/pretrained_models/index.html#sherpa-onnx-kws-zipformer-wenetspeech-3-3m-2024-01-01-chinese
+本质是一个非常小的语音识别模型，这里用它来实现语音唤醒（一直监听音频流），类似小爱同学
+支持自定义、复数个关键词且不需要重新训练。
+
+ASR：https://k2-fsa.github.io/sherpa/onnx/pretrained_models/online-transducer/zipformer-transducer-models.html#csukuangfj-sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20-bilingual-chinese-english
+在成功语音唤醒后，才会从语音唤醒模式切换到语音识别模式，对音频流进行语音识别，进行自己的业务处理
+模型的识别率还可以、支持中英文混合、RTF表现优秀，支持热词。
+
+使用热词是由于项目中有一些专业性的词汇，不设置热词的默认识别率比较低。热词也是可以自定义、复数个、不需要重新训练。
+https://k2-fsa.github.io/sherpa/onnx/hotwords/index.html
+
+TTS： https://k2-fsa.github.io/sherpa/onnx/tts/pretrained_models/vits.html#aishell3-chinese-multi-speaker-174-speakers
+
+
+## Q & A
   Traceback (most recent call last):
   File "/mnt/sdb/shared/sherpa-onnx/./python-api-examples/vad-microphone.py", line 8, in <module>
     import sounddevice as sd
