@@ -42,13 +42,20 @@ class SpeechToText:
     def _init_sensevoice(self, kwargs):
         model_path = resource_path(kwargs.get("model_path", "sensevoice_ckpt"))
         #self.model = AutoModel(model=model_path, trust_remote_code=True, device=self.device, disable_update=True)
+
+        # 获取系统的 CPU 核心数
+        cpu_cores = os.cpu_count()
+
+        # 设置 num_threads 为 CPU 核心数
+        num_threads = cpu_cores if cpu_cores else 1  # 如果获取失败，默认为 1
+
         self.model = sherpa_onnx.OfflineRecognizer.from_sense_voice(
             model=str(model_path / "model.int8.onnx"),
             tokens=str(model_path / "tokens.txt"),
-            num_threads = 1,
+            num_threads = num_threads,
             language="auto", #auto, zh, en, ko, ja, and yue
             use_itn=True,
-            debug=True,
+            debug=False,
         )
 
     def transcribe(self, sample_rate, audio):
