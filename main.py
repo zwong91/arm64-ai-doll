@@ -26,7 +26,7 @@ class VoiceAssistant:
         )
 
     def process_conversation(self):
-        audio = self.recorder.record_until_silence(self.config.vad_model, self.config.record_duration)
+        audio = self.recorder.record_until_silence(self.config.vad_model, self.config.silence_duration)
         print("VAD完成:", time.strftime("%H:%M:%S"))
         all_start = time.time()
         if audio is None or len(audio) == 0:

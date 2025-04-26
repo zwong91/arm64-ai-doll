@@ -16,5 +16,5 @@ class Config:
         self.tts_voice = tts_voice
         self.llm_model = llm_model
         self.record_duration = record_duration
-        self.silence_duration = 2.0
+        self.silence_duration = 1.0
         self.sample_rate = sample_rate

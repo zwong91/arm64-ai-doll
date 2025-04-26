@@ -17,10 +17,10 @@ class Recorder:
         vad_config.sample_rate = sample_rate
         self.vad = sherpa_onnx.VoiceActivityDetector(vad_config, buffer_size_in_seconds=30)
 
-    def record_until_silence(self, max_duration=10, silence_duration=1.2, enable_noise_reduction=True):
+    def record_until_silence(self, silence_duration=1.0, enable_noise_reduction=True):
         chunk_duration = 0.1  # 秒
         chunk_size = int(self.sample_rate * chunk_duration)
-        silence_chunks = int(silence_duration / chunk_duration * 1.2)
+        silence_chunks = int(silence_duration / chunk_duration * 1.1)
 
         recorded = []
         silence_counter = 0
