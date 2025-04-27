@@ -346,6 +346,8 @@ sudo apt-get install libportaudio2
 
 不过你有方法可以搞定离线安装：
 
+https://packages.debian.org/sid/libportaudio2
+
 ✅ 1. **自己编译 PortAudio 静态库**  
 如果你想要更极限（不用系统库），可以自己编译：
 
@@ -356,3 +358,4 @@ cd portaudio
 make
 make install
 ```
+
