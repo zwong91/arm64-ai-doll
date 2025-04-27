@@ -36,7 +36,7 @@ class VoiceAssistant:
                 encoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.onnx",
                 decoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.onnx",
                 joiner_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.onnx",
-                keywords_file="keywords.txt"
+                keywords_file="keywords/keywords.txt"
             )
             self.asr_handler = AsrHandler(model_path="sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en")
             self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
