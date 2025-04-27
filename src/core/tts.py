@@ -3,6 +3,7 @@ import sys
 import queue
 import threading
 import time
+import logging
 
 import numpy as np
 import sherpa_onnx
@@ -82,10 +83,10 @@ def stop_playback():
 
 class TextToSpeech:
     def __init__(self, 
-                 model_dir="sherpa/kokoro-multi-lang-v1_0",  
+                 model_dir="sherpa/vits-icefall-zh-aishell3",  
                  backend="sherpa-onnx",
                  voice="af_alloy",   
-                 speed=1.2,
+                 speed=1.3,
         ):
         self.backend = backend
         self.voice = voice
@@ -94,6 +95,7 @@ class TextToSpeech:
         if real_path is None:
             raise ValueError("model_dir must be specified")
         self.model_dir = real_path
+        logging.info(f"初始化 TTS 模型: {self.model_dir}")
         if not os.path.isdir(self.model_dir):
             raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
 
@@ -132,7 +134,7 @@ class TextToSpeech:
                     model_files["model"] = file_path
                 elif file == "voices.bin":
                     model_files["kokoro_voices"] = file_path
-                elif file == "lexicon-us-en.txt" or file == "lexicon-zh.txt":
+                elif file == "lexicon.txt" or file == "lexicon-us-en.txt" or file == "lexicon-zh.txt":
                     lexicons.append(file_path)
                 elif file == "tokens.txt":
                     model_files["tokens"] = file_path
@@ -148,6 +150,12 @@ class TextToSpeech:
 
             # 拼接多个lexicon路径
             model_files["lexicon"] = ",".join(lexicons)
+            
+            # 获取可选的 voices 字段，若没有则使用空字符串
+            kokoro_voices = model_files.get("kokoro_voices", "")
+            dict_dir = model_files.get("dict_dir", '')
+            data_dir = model_files.get("data_dir", '')
+
             provider = detect_provider()
             # https://k2-fsa.github.io/sherpa/onnx/tts/pretrained_models/kokoro.html
             sid = 0
@@ -156,12 +164,19 @@ class TextToSpeech:
 
             tts_config = sherpa_onnx.OfflineTtsConfig(
                 model=sherpa_onnx.OfflineTtsModelConfig(
+                    vits=sherpa_onnx.OfflineTtsVitsModelConfig(
+                        model=model_files["model"],
+                        lexicon=model_files["lexicon"],
+                        dict_dir=model_files["dict_dir"] or '',
+                        tokens=model_files["tokens"],
+                        length_scale=self.speed,  # 设置语速
+                    ),
                     kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
                         model=model_files["model"],
-                        voices=model_files["kokoro_voices"],
+                        voices=kokoro_voices,
                         tokens=model_files["tokens"],
                         lexicon=model_files["lexicon"],
-                        data_dir=model_files["data_dir"] or '',
+                        data_dir=data_dir,
                         dict_dir=model_files["dict_dir"] or '',
                         length_scale=self.speed,
                     ),

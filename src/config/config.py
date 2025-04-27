@@ -6,7 +6,7 @@ class Config:
         output_device: str = "default",
         vad_model: str = "vad_ckpt/silero_vad.onnx",
         sample_rate: int = 16000,
-        tts_model: str = "sherpa/kokoro-multi-lang-v1_0",
+        tts_model: str = "sherpa/vits-icefall-zh-aishell3",
         llm_model: str = "MiniMind2-Small",
         denoiser_model: str = "speech-enhancement/gtcrn_simple.onnx"
     ):

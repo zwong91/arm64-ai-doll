@@ -147,12 +147,12 @@ class VoiceAssistant:
     def _process_audio_to_text(self, audio: np.ndarray) -> Optional[str]:
         try:
             text = self.stt.transcribe(self.config.sample_rate, audio)
-            language = langid.classify(text)[0].strip().lower()
-            
-            if language not in ('zh', 'en'):
+            language = langid.classify(text)[0].strip().lower()        
+            #if language not in ('zh', 'en'):
+            if language != 'zh':
                 logging.warning(f"不支持的语言: {language}")
                 return None
-                
+
             return text
         except Exception as e:
             logging.error(f"音频转文字失败: {str(e)}")
@@ -183,8 +183,8 @@ class VoiceAssistant:
             audio, sample_rate = sf.read(wave_filename, dtype="float32", always_2d=True)
             audio = audio[:, 0]  # only use the first channel
             audio = np.ascontiguousarray(audio)
-            text = self.stt.transcribe(sample_rate, audio)
-            logging.info(f"识别结果: {text}")
+            with self._time_it("语音转录"):
+                text = self.stt.transcribe(sample_rate, audio)
 
             response = self._generate_response(text)
 
