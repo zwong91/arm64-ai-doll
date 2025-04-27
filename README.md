@@ -352,10 +352,6 @@ https://packages.debian.org/sid/libportaudio2
 如果你想要更极限（不用系统库），可以自己编译：
 
 ```bash
-git clone https://github.com/PortAudio/portaudio.git
-cd portaudio
-./configure
-make
-make install
+apt install libportaudio2_19.6.0-1.2+b3_arm64.deb
 ```
 
