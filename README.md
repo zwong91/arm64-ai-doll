@@ -173,6 +173,9 @@ python main.py -f input.wav --output-device "蓝牙耳机"
 ./arm64_ai_doll --list-devices
 ./arm64_ai_doll -i --input-device "麦克风<name or ID>" --output-device "扬声器<name or ID>"
 
+
+apt install alsa-utils pulseaudio
+
 python main.py -i --input-device "default" --output-device "default"
 
 ```
@@ -197,6 +200,7 @@ kill $(cat /path/to/pidfile.txt)
 pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
+  --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \

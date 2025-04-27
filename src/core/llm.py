@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from transformers import AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer
+from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer, TextIteratorStreamer
 import torch
 import random
 from typing import Generator, Optional, List, Dict, Union
@@ -15,7 +15,8 @@ class LLMConfig:
     temperature: float = 1.0
     top_p: float = 0.85
     
-DEFAULT_SYSTEM_PROMPT = "你是小柱子，一个温柔、聪明、会讲故事的AI小伙伴，专为儿童设计。"
+# -*- coding: utf-8 -*-
+DEFAULT_SYSTEM_PROMPT = "你是小柱子，只会说中文，一个温柔、聪明、会讲故事的AI小伙伴， 专为儿童设计。"
 
 class LocalLLMClient:
     def __init__(self, config: Union[str, LLMConfig]):
@@ -37,8 +38,7 @@ class LocalLLMClient:
         return model, tokenizer
 
     def _prepare_input(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
-        if messages is None:
-            messages = [{"role": "system", "content": DEFAULT_SYSTEM_PROMPT}]
+        messages = [{"role": "assistant", "content": DEFAULT_SYSTEM_PROMPT}]
         messages.append({"role": "user", "content": prompt})
         
         return self.tokenizer.apply_chat_template(
@@ -54,6 +54,7 @@ class LocalLLMClient:
         print(f'👶: {prompt}')
         print('🤖️: ', end='', flush=True)
 
+        streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
         with torch.no_grad():
             inputs = self.tokenizer(
                 input_text, 
@@ -61,17 +62,21 @@ class LocalLLMClient:
                 truncation=True
             ).to(self.config.device)
             
-            outputs = self.model.generate(
+            generated_ids = self.model.generate(
                 inputs.input_ids,
                 max_new_tokens=self.config.max_new_tokens,
-                temperature=self.config.temperature,
-                top_p=self.config.top_p,
+                num_return_sequences=1,
                 do_sample=True,
-                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id
+                attention_mask=inputs["attention_mask"],
+                pad_token_id=self.tokenizer.pad_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+                streamer=streamer,
+                top_p=self.config.top_p,
+                temperature=self.config.temperature,
             )
             
             response = self.tokenizer.decode(
-                outputs[0][inputs.input_ids.shape[1]:],
+                generated_ids[0][inputs.input_ids.shape[1]:],
                 skip_special_tokens=True
             )
             print(response.strip())
@@ -98,10 +103,14 @@ class LocalLLMClient:
                 self.model.generate,
                 inputs.input_ids,
                 max_length=self.config.max_seq_len + self.config.max_new_tokens,
-                temperature=self.config.temperature,
-                top_p=self.config.top_p,
+                num_return_sequences=1,
                 do_sample=True,
-                streamer=streamer
+                attention_mask=inputs["attention_mask"],
+                pad_token_id=self.tokenizer.pad_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+                streamer=streamer,
+                top_p=self.config.top_p,
+                temperature=self.config.temperature,
             )
 
             for text in streamer:
