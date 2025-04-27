@@ -239,10 +239,15 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
-  --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
+  --add-data "vad_ckpt:vad_ckpt" \
+  --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
+  --add-data "speech-enhancement:speech-enhancement" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
-  --collect-binaries sounddevice \
+  --hidden-import="sounddevice" \
+  --hidden-import="_sounddevice_data" \
+  --hidden-import="numpy.core._multiarray_umath" \
+  --runtime-hook "hooks/rthook_portaudio.py" \
   main.py
 
 ```

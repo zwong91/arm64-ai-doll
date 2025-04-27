@@ -116,7 +116,6 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "speech-enhancement:speech-enhancement" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
-  --add-binary "/usr/local/lib/libportaudio.so.2:." \
   --hidden-import="sounddevice" \
   --hidden-import="_sounddevice_data" \
   --hidden-import="numpy.core._multiarray_umath" \
