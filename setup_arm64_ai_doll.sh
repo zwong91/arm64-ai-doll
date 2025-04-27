@@ -110,6 +110,7 @@ cd -
 echo "📦 Step 15: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
+  --add-data "sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en:sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
@@ -117,10 +118,6 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --add-data "keywords:keywords" \
-  --hidden-import="sounddevice" \
-  --hidden-import="_sounddevice_data" \
-  --hidden-import="numpy.core._multiarray_umath" \
-  --runtime-hook "hooks/rthook_portaudio.py" \
   main.py
 
 #echo "🚀 Step 15: 运行打包后的程序"
@@ -139,6 +136,8 @@ OUTPUT_NAME="arm64_ai_doll_${GIT_VER}.zip"
 echo ">>> 16. 压缩构建输出为 $OUTPUT_NAME"
 
 cp -r keyword.mp3 dist/arm64_ai_doll/
+# cp libpyaudio
+
 # 进入 dist/
 cd dist
 

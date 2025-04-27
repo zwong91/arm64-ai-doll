@@ -13,7 +13,7 @@ import logging
 import sherpa_onnx
 
 logger = logging.getLogger(__name__)
-
+from ..utils.resource_utils import resource_path
 
 class AsrHandler:
     def __init__(self, model_path, debug=False):
@@ -27,9 +27,9 @@ class AsrHandler:
         decoder = os.path.join(model_path, "decoder.int8.onnx")
         tokens = os.path.join(model_path, "tokens.txt")
         self.recognizer = sherpa_onnx.OnlineRecognizer.from_paraformer(
-            tokens=tokens,
-            encoder=encoder,
-            decoder=decoder,
+            tokens=resource_path(tokens),
+            encoder=resource_path(encoder),
+            decoder=resource_path(decoder),
             num_threads=2,
             sample_rate=16000,
             feature_dim=80,

@@ -238,6 +238,7 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 ```bash
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
+  --add-data "sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en:sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
@@ -245,10 +246,6 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --add-data "keywords:keywords" \
-  --hidden-import="sounddevice" \
-  --hidden-import="_sounddevice_data" \
-  --hidden-import="numpy.core._multiarray_umath" \
-  --runtime-hook "hooks/rthook_portaudio.py" \
   main.py
 
 ```
@@ -357,5 +354,5 @@ git clone https://github.com/PortAudio/portaudio.git
 cd portaudio
 ./configure
 make
-sudo make install
+make install
 ```
