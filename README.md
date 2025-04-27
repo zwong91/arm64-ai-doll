@@ -31,19 +31,15 @@ docker buildx ls
 ### 2. 拉起 ARM64 架构的 Ubuntu 容器
 
 ```bash
-docker run -it --platform linux/arm64 arm64v8/debian:11-slim bash
-
-docker pull arm64v8/debian:10.13-slim
-
-docker ps
-docker exec -it baf8769b0701 bash
-
-docker cp 9ebe94e97c12:/root/arm64-ai-doll/dist-0.0.2.zip ./
 docker run -it --platform linux/arm64 \
-  -v "$(pwd)/444":/mnt/ \
-  arm64v8/debian:11-slim \
+  -v "$(pwd)":/mnt/ \
+  arm64v8/debian:10.13-slim \
   bash
 
+
+docker ps
+docker exec -it <container_id> bash
+docker cp 9ebe94e97c12:/root/arm64-ai-doll/xxx.zip ./
 ```
 
 > ⏱ 初次拉取镜像可能稍慢，但之后速度会很快。
