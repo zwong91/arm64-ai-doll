@@ -199,8 +199,8 @@ pip install pyinstaller
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "vad_ckpt:vad_ckpt" \
+  --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
   --add-data "speech-enhancement:speech-enhancement" \
-  --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --collect-binaries sounddevice \
@@ -233,6 +233,7 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 然后，使用以下命令将你的 `main.py` 文件打包成一个可执行文件：
 ```bash
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
+  --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
   --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
@@ -304,6 +305,13 @@ src/
 关键词检测：https://k2-fsa.github.io/sherpa/onnx/kws/pretrained_models/index.html#sherpa-onnx-kws-zipformer-wenetspeech-3-3m-2024-01-01-chinese
 本质是一个非常小的语音识别模型，这里用它来实现语音唤醒（一直监听音频流），类似小爱同学
 支持自定义、复数个关键词且不需要重新训练。
+
+```bash
+sherpa-onnx-cli text2token \
+  --tokens sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/tokens.txt \
+  --tokens-type ppinyin \
+  keywords_raw.txt keywords.txt
+```
 
 ASR：https://k2-fsa.github.io/sherpa/onnx/pretrained_models/online-transducer/zipformer-transducer-models.html#csukuangfj-sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20-bilingual-chinese-english
 在成功语音唤醒后，才会从语音唤醒模式切换到语音识别模式，对音频流进行语音识别，进行自己的业务处理

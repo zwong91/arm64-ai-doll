@@ -8,6 +8,7 @@ import logging
 from typing import Generator, Optional
 from contextlib import contextmanager
 
+from src.core.kws import KeywordSpotter
 from src.core.stt import SpeechToText
 from src.core.stream_microphone import AsrHandler
 from src.core.tts import TextToSpeech
@@ -30,8 +31,16 @@ class VoiceAssistant:
         self.executor = ThreadPoolExecutor(max_workers=2)
         
         try:
-            self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
+            self.kws = KeywordSpotter(
+                tokens_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/tokens.txt",
+                encoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.onnx",
+                decoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.onnx",
+                joiner_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.onnx",
+                keywords_file="keywords.txt"
+            )
             self.asr_handler = AsrHandler(model_path="sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en")
+            self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
+
             self.stt = SpeechToText(config.asr_model)
             self.tts = TextToSpeech(config.tts_model)
             self.llm = LocalLLMClient(config.llm_model)
@@ -40,6 +49,7 @@ class VoiceAssistant:
                 input_device=config.input_device,
                 vad_model_path=config.vad_model
             )
+            self.is_awake_mode = True  # 初始唤醒模式
         except Exception as e:
             logging.error(f"初始化组件失败: {str(e)}")
             raise
@@ -120,6 +130,16 @@ class VoiceAssistant:
             if not self._validate_audio(audio):
                 return None
 
+            if self.is_awake_mode:
+                with self._time_it("关键字唤醒"):           
+                    result = self.kws.process_audio(audio)
+                    if result:
+                        logging.info(f"检测到关键词: {result}")
+                        self.is_awake_mode = False  # 切换到语音识别模式
+                    else:
+                        logging.info("未检测到关键词")
+                        return None
+
             text = self._process_audio_to_text(audio)
             if not text:
                 return None
@@ -183,6 +203,12 @@ class VoiceAssistant:
             audio, sample_rate = sf.read(wave_filename, dtype="float32", always_2d=True)
             audio = audio[:, 0]  # only use the first channel
             audio = np.ascontiguousarray(audio)
+            with self._time_it("关键字唤醒"):           
+                result = self.kws.process_audio(audio)
+                if result:
+                    print(f"检测到关键词: {result}")
+                    self.is_awake_mode = False  # 切换到语音识别模式
+
             with self._time_it("语音转录"):
                 text = self.stt.transcribe(sample_rate, audio)
 
