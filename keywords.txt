@@ -2,6 +2,10 @@ n ǐ h ǎo zh ù z i @你好柱子
 zh ǔ z i @主子
 zh ù z i @柱子
 zh ū z i @朱子
+h ēi x iǎo zh ū @嘿小朱
+h ēi x iǎo zh ù @嘿小柱
+x iǎo zh ū x iǎo zh ū @小朱小朱
+x iǎo zh ù x iǎo zh ù @小柱小柱
 n ǐ h ǎo x iǎo zh ù @你好小柱
 n ǐ h ǎo x iǎo zh ū @你好小朱
 x iǎo zh ù t óng x ué @小柱同学
