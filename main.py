@@ -137,6 +137,8 @@ class VoiceAssistant:
             logging.info("未检测到语音")
             return False
         
+        logging.info(f"VAD语音结束: {time.strftime('%H:%M:%S')}")
+
         duration = len(audio) / self.config.sample_rate
         max_volume = np.max(np.abs(audio))
         logging.info(f"录音长度: {duration:.2f}秒, 最大音量: {max_volume:.4f}")
@@ -187,11 +189,11 @@ class VoiceAssistant:
             response = self._generate_response(text)
 
             os.makedirs(output_dir, exist_ok=True)
-            output_file = os.path.join(output_dir, "response.wav")
+            output_file = os.path.join(output_dir, f"{time.strftime('%Y%m%d-%H%M%S')}-speech.wav")
             with self._time_it("语音合成"):
                 self.tts.synthesize(response, output_file)
 
-            logging.info(f"Response saved to: {output_file}")
+            logging.info(f"saved to: {output_file}")
             logging.info(f"总耗时: {time.time() - all_start:.2f}秒")
         except Exception as e:
             logging.error(f"处理音频文件时出错: {str(e)}")
