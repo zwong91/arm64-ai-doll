@@ -240,6 +240,7 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
   --add-data "sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en:sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
+  --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
   --add-data "speech-enhancement:speech-enhancement" \
@@ -348,10 +349,9 @@ sudo apt-get install libportaudio2
 
 https://packages.debian.org/sid/libportaudio2
 
-✅ 1. **自己编译 PortAudio 静态库**  
-如果你想要更极限（不用系统库），可以自己编译：
-
 ```bash
-apt install libportaudio2_19.6.0-1.2+b3_arm64.deb
+apt-get install --download-only libportaudio2
+
+
 ```
 
