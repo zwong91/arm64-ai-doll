@@ -82,10 +82,10 @@ def stop_playback():
 
 class TextToSpeech:
     def __init__(self, 
-                 model_dir="kokoro-multi-lang-v1_0",  
+                 model_dir="sherpa/kokoro-multi-lang-v1_0",  
                  backend="sherpa-onnx",
                  voice="af_alloy",   
-                 speed=1.2,       
+                 speed=1.2,
         ):
         self.backend = backend
         self.voice = voice

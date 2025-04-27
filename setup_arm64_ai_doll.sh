@@ -110,7 +110,8 @@ cd -
 echo "📦 Step 15: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
-  --add-data "kokoro-multi-lang-v1_0:kokoro-multi-lang-v1_0" \
+  --add-data "vad_ckpt:vad_ckpt" \
+  --add-data "sherpa/kokoro-multi-lang-v1_0:sherpa/kokoro-multi-lang-v1_0" \
   --add-data "speech-enhancement:speech-enhancement" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \

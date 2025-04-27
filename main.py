@@ -4,8 +4,12 @@ import os
 import time
 import numpy as np
 import soundfile as sf
+import logging
+from typing import Generator, Optional
+from contextlib import contextmanager
 
 from src.core.stt import SpeechToText
+from src.core.stream_microphone import AsrHandler
 from src.core.tts import TextToSpeech
 from src.core.llm import LocalLLMClient
 from src.core.recorder import Recorder
@@ -13,130 +17,232 @@ from src.core.speech_denoiser import SpeechEnhancer
 from src.config.config import Config
 import langid
 
+import asyncio
+from queue import Queue
+from concurrent.futures import ThreadPoolExecutor
+
 class VoiceAssistant:
     def __init__(self, config: Config):
+        self._setup_logging()
+        self._validate_config(config)
         self.config = config
-        self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
-        self.stt = SpeechToText(config.asr_model)
-        self.tts = TextToSpeech(config.tts_voice)
-        self.llm = LocalLLMClient(config.llm_model)
-        self.recorder = Recorder(
-            sample_rate=config.sample_rate,
-            input_device=config.input_device,
-            vad_model_path=config.vad_model
+        self.tts_queue = Queue()
+        self.executor = ThreadPoolExecutor(max_workers=2)
+        
+        try:
+            self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
+            self.asr_handler = AsrHandler(model_path="sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en")
+            self.stt = SpeechToText(config.asr_model)
+            self.tts = TextToSpeech(config.tts_model)
+            self.llm = LocalLLMClient(config.llm_model)
+            self.recorder = Recorder(
+                sample_rate=config.sample_rate,
+                input_device=config.input_device,
+                vad_model_path=config.vad_model
+            )
+        except Exception as e:
+            logging.error(f"初始化组件失败: {str(e)}")
+            raise
+
+    def _setup_logging(self) -> None:
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s'
         )
 
-    def process_conversation(self):
-        audio = self.recorder.record_until_silence(self.config.silence_duration)
-        print("VAD检测完成:", time.strftime("%H:%M:%S"))
-        all_start = time.time()
+    @staticmethod
+    def _validate_config(config: Config) -> None:
+        required_fields = ['sample_rate', 'input_device', 'vad_model']
+        for field in required_fields:
+            if not hasattr(config, field):
+                raise ValueError(f"配置缺少必要字段: {field}")
+
+    @contextmanager
+    def _temp_audio_file(self, suffix: str = ".wav"):
+        temp_file = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+        try:
+            yield temp_file.name
+        finally:
+            try:
+                os.unlink(temp_file.name)
+            except OSError:
+                pass
+
+    async def _synthesize_worker(self):
+        """异步语音合成worker"""
+        while True:
+            if not self.tts_queue.empty():
+                text = self.tts_queue.get()
+                if text == "#END":
+                    break
+                    
+                with self._temp_audio_file() as temp_output:
+                    # 在线程池中执行同步TTS
+                    await asyncio.get_event_loop().run_in_executor(
+                        self.executor, 
+                        self.tts.synthesize,
+                        text, 
+                        temp_output
+                    )
+            await asyncio.sleep(0.1)
+
+    async def process(self):
+        """异步处理对话"""
+        # 启动TTS worker
+        tts_task = asyncio.create_task(self._synthesize_worker())
+        
+        gen = self.asr_handler.handle()
+        for sentence in gen:
+            logging.info(f"Q:\n{sentence}")
+            reply_gen = self.llm.stream_chat(sentence)
+            logging.info("A:")
+            
+            for reply in reply_gen:
+                print(reply, end="")
+                # 将文本片段加入TTS队列
+                self.tts_queue.put(reply)
+                yield reply
+                
+            self.tts_queue.put("#END")
+            yield "#refresh"
+            print()
+            logging.info("==================")
+            
+            # 等待TTS完成当前句子
+            await tts_task
+            
+        # 清理
+        self.executor.shutdown()
+
+    def process_conversation(self) -> Optional[str]:
+        try:
+            audio = self.recorder.record_until_silence(self.config.silence_duration)
+            if not self._validate_audio(audio):
+                return None
+
+            text = self._process_audio_to_text(audio)
+            if not text:
+                return None
+
+            response = self._generate_response(text)
+            self._synthesize_response(response)
+            return response
+
+        except Exception as e:
+            logging.error(f"处理对话时出错: {str(e)}")
+            return None
+
+    def _validate_audio(self, audio: np.ndarray) -> bool:
         if audio is None or len(audio) == 0:
-            print("未检测到语音")
-            return
+            logging.info("未检测到语音")
+            return False
+        
+        duration = len(audio) / self.config.sample_rate
+        max_volume = np.max(np.abs(audio))
+        logging.info(f"录音长度: {duration:.2f}秒, 最大音量: {max_volume:.4f}")
+        return True
 
-        print(f"录音长度: {len(audio) / self.config.sample_rate:.2f} 秒")
-        print(f"最大音量: {np.max(np.abs(audio)):.4f}")
-        # enhanced_audio = self.speech_enhancer.enhance(audio, self.config.sample_rate)
-        # print(f"增强音频长度: {len(enhanced_audio) / self.config.sample_rate:.2f} 秒")
-        # print(f"增强最大音量: {np.max(np.abs(enhanced_audio)):.4f}")
-        # enhanced_audio = np.asarray(enhanced_audio)
+    def _process_audio_to_text(self, audio: np.ndarray) -> Optional[str]:
+        try:
+            text = self.stt.transcribe(self.config.sample_rate, audio)
+            language = langid.classify(text)[0].strip().lower()
+            
+            if language not in ('zh', 'en'):
+                logging.warning(f"不支持的语言: {language}")
+                return None
+                
+            return text
+        except Exception as e:
+            logging.error(f"音频转文字失败: {str(e)}")
+            return None
 
-        filename_for_speech = time.strftime("%Y%m%d-%H%M%S-speech.wav")
-        sf.write(filename_for_speech, audio, samplerate=self.config.sample_rate)
+    def _generate_response(self, text: str) -> str:
+        with self._time_it("LLM响应"):
+            return self.llm.get_response(text)
 
-        # filename_for_all = time.strftime("%Y%m%d-%H%M%S-enhanced.wav")
-        # sf.write(filename_for_all, enhanced_audio, samplerate=self.config.sample_rate)
+    def _synthesize_response(self, response: str) -> None:
+        with self._time_it("语音合成"):
+            with self._temp_audio_file() as temp_file:
+                self.tts.synthesize(response, temp_file)
 
-        print(f"Saved to {filename_for_speech}")
-        # 语音识别
+    @contextmanager
+    def _time_it(self, task_name: str):
         start = time.time()
-        text = self.stt.transcribe(self.config.sample_rate, audio)    
-        language = langid.classify(text)[0].strip().lower()
-        if language in ('zh', 'en'):
-            print(f"Language detected: {language}")
-        else:
-            print(f"Unsupported language: {language}")
-            return
+        try:
+            yield
+        finally:
+            duration = time.time() - start
+            logging.info(f"{task_name}耗时: {duration:.2f}秒")
 
-        print(f"语音识别耗时: {time.time() - start:.2f}秒")
+    def process_audio_file(self, wave_filename, output_dir="."):
+        try:
+            all_start = time.time()
 
-        start = time.time()
-        response = self.llm.get_response(text)
-        print(f"LLM响应耗时: {time.time() - start:.2f}秒")
+            audio, sample_rate = sf.read(wave_filename, dtype="float32", always_2d=True)
+            audio = audio[:, 0]  # only use the first channel
+            audio = np.ascontiguousarray(audio)
+            text = self.stt.transcribe(sample_rate, audio)
+            logging.info(f"识别结果: {text}")
 
-        start = time.time()
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_output:
-            self.tts.synthesize(response, temp_output.name)
-            print(f"语音合成耗时: {time.time() - start:.2f}秒")
+            response = self._generate_response(text)
 
-            # TODO: 可打断
-            #self.audio.play(temp_output.name)
-            os.unlink(temp_output.name)
+            os.makedirs(output_dir, exist_ok=True)
+            output_file = os.path.join(output_dir, "response.wav")
+            with self._time_it("语音合成"):
+                self.tts.synthesize(response, output_file)
 
-        print(f"总耗时: {time.time() - all_start:.2f}秒")
-
-
-    def process_audio_file(self, audio_file_path, output_dir="."):
-        all_start = time.time()
-
-        start = time.time()
-        text = self.stt.transcribe(audio_file_path)
-        print(f"语音识别耗时: {time.time() - start:.2f}秒")
-        print(f"识别结果: {text}")
-
-        start = time.time()
-        response = self.llm.get_response(text)
-        print(f"LLM响应耗时: {time.time() - start:.2f}秒")
-
-        start = time.time()
-        os.makedirs(output_dir, exist_ok=True)
-        output_file = os.path.join(output_dir, "response.wav")
-        self.tts.synthesize(response, output_file)
-        print(f"语音合成耗时: {time.time() - start:.2f}秒")
-
-        print(f"Response saved to: {output_file}")
-        print(f"总耗时: {time.time() - all_start:.2f}秒")
-
+            logging.info(f"Response saved to: {output_file}")
+            logging.info(f"总耗时: {time.time() - all_start:.2f}秒")
+        except Exception as e:
+            logging.error(f"处理音频文件时出错: {str(e)}")
 
 def main():
-    parser = argparse.ArgumentParser(description='Voice Assistant')
-    parser.add_argument('--asr-model', default='whisper')
-    parser.add_argument('--interactive', '-i', action='store_true')
-    parser.add_argument('--file', '-f')
-    parser.add_argument('--output-dir', default='.')
-    parser.add_argument('--list-devices', '-l', action='store_true')
-    parser.add_argument('--input-device', default='default')
-    parser.add_argument('--output-device', default='default')
-    parser.add_argument('--pid-file')
-    parser.add_argument('--vad-model', default='vad_ckpt/silero_vad.onnx', help='Path to silero_vad.onnx')
-    args = parser.parse_args()
+    try:
+        parser = argparse.ArgumentParser(description='Voice Assistant')
+        parser.add_argument('--asr-model', default='whisper')
+        parser.add_argument('--interactive', '-i', action='store_true')
+        parser.add_argument('--file', '-f')
+        parser.add_argument('--output-dir', default='.')
+        parser.add_argument('--list-devices', '-l', action='store_true')
+        parser.add_argument('--input-device', default='default')
+        parser.add_argument('--output-device', default='default')
+        parser.add_argument('--pid-file')
+        parser.add_argument('--vad-model', default='vad_ckpt/silero_vad.onnx', help='Path to silero_vad.onnx')
+        args = parser.parse_args()
+        
+        if args.list_devices:
+            AudioManager.list_devices()
+            return
 
-    if args.list_devices:
-        AudioManager.list_devices()
-        return
+        config = Config(
+            asr_model=args.asr_model,
+            input_device=args.input_device,
+            output_device=args.output_device,
+            vad_model=args.vad_model
+        )
+        
+        assistant = VoiceAssistant(config)
 
-    config = Config(
-        asr_model=args.asr_model,
-        input_device=args.input_device,
-        output_device=args.output_device,
-        vad_model=args.vad_model
-    )
-    assistant = VoiceAssistant(config)
+        if args.pid_file:
+            with open(args.pid_file, 'w') as f:
+                f.write(str(os.getpid()))
 
-    if args.pid_file:
-        with open(args.pid_file, 'w') as f:
-            f.write(str(os.getpid()))
+        if args.file:
+            assistant.process_audio_file(args.file, args.output_dir)
+        elif args.interactive:
+            logging.info("启动交互模式...")
+            try:
+                while True:
+                    assistant.process_conversation()
+                    ##asyncio.run(assistant.process())
+            except KeyboardInterrupt:
+                logging.info("用户终止程序")
+        else:
+            logging.error("请指定 --file 或 --interactive 模式")
 
-    if args.file:
-        assistant.process_audio_file(args.file, args.output_dir)
-    elif args.interactive:
-        try:
-            while True:
-                assistant.process_conversation()
-        except KeyboardInterrupt:
-            print("\nExiting...")
-    else:
-        print("Please specify either --file or --interactive mode")
+    except Exception as e:
+        logging.error(f"程序执行出错: {str(e)}")
+        raise
 
 if __name__ == "__main__":
     main()

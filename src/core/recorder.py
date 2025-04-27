@@ -15,6 +15,15 @@ class Recorder:
         # 初始化VAD
         vad_config = sherpa_onnx.VadModelConfig()
         vad_config.silero_vad.model = vad_model_path
+
+        vad_config.silero_vad.threshold = 0.5
+        vad_config.silero_vad.min_silence_duration = 0.25  # seconds
+        vad_config.silero_vad.min_speech_duration = 0.25  # seconds
+        # If the current segment is larger than this value, then it increases
+        # the threshold to 0.9 internally. After detecting this segment,
+        # it resets the threshold to its original value.
+        vad_config.silero_vad.max_speech_duration = 5  # seconds
+
         vad_config.sample_rate = sample_rate
         self.vad = sherpa_onnx.VoiceActivityDetector(vad_config, buffer_size_in_seconds=30)
 

@@ -1,131 +1,109 @@
+from dataclasses import dataclass
+from transformers import AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer
 import torch
-import sys
-import os
 import random
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from model.model import MiniMindLM
-from model.LMConfig import LMConfig
-from model.model_lora import apply_lora, load_lora
-from argparse import Namespace
-from model.model_lora import *
-from src.utils.resource_utils import resource_path
+from typing import Generator, Optional, List, Dict, Union
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
-
-def setup_seed(seed):
-    random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+@dataclass
+class LLMConfig:
+    model_path: str = 'model/minimind_tokenizer'
+    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+    max_seq_len: int = 200
+    max_new_tokens: int = 64
+    temperature: float = 1.0
+    top_p: float = 0.85
+    
+DEFAULT_SYSTEM_PROMPT = "你是小柱子，一个温柔、聪明、会讲故事的AI小伙伴，专为儿童设计。"
 
 class LocalLLMClient:
-    def __init__(self, args):
-        args = Namespace(
-            load=1,
-            use_moe=False,
-            model_mode=2,
-            dim=512,
-            n_layers=8,
-            max_seq_len=200,
-            lora_name='None',
-            out_dir='output',
-            device='cuda' if torch.cuda.is_available() else 'cpu',
-            max_new_tokens=64
-        )
-        self.model, self.tokenizer = self._init_model(args)
-        self.model_mode = args.model_mode
-        self.max_seq_len = args.max_seq_len
-        self.temperature = 1
-        self.top_p = 0.85
-        self.device ='cuda' if torch.cuda.is_available() else 'cpu',
-        self.stream = False
-        self.max_new_tokens = args.max_new_tokens if hasattr(args, 'max_new_tokens') else 200
-
-    def _init_model(self, args):
-        real_path = resource_path('model/minimind_tokenizer')
-        tokenizer = AutoTokenizer.from_pretrained(real_path)
-        if args.load == 0:
-            moe_path = '_moe' if args.use_moe else ''
-            modes = {0: 'pretrain', 1: 'full_sft', 2: 'rlhf', 3: 'reason', 4: 'grpo'} #4 RLAIF
-            ckp = f'./{args.out_dir}/{modes[args.model_mode]}_{args.dim}{moe_path}.pth'
-
-            model = MiniMindLM(LMConfig(
-                dim=args.dim,
-                n_layers=args.n_layers,
-                max_seq_len=args.max_seq_len,
-                use_moe=args.use_moe
-            ))
-
-            state_dict = torch.load(ckp, map_location=args.device)
-            model.load_state_dict({k: v for k, v in state_dict.items() if 'mask' not in k}, strict=True)
-
-            if args.lora_name != 'None':
-                apply_lora(model)
-                load_lora(model, f'./{args.out_dir}/lora/{args.lora_name}_{args.dim}.pth')
+    def __init__(self, config: Union[str, LLMConfig]):
+        # 如果传入字符串，转换为 LLMConfig
+        if isinstance(config, str):
+            self.config = LLMConfig(model_path=config)
         else:
-            transformers_model_path = resource_path('MiniMind2-Small')
-            tokenizer = AutoTokenizer.from_pretrained(transformers_model_path)
-            model = AutoModelForCausalLM.from_pretrained(transformers_model_path, trust_remote_code=True)
+            self.config = config
+        self.model, self.tokenizer = self._init_model()
+        self.executor = ThreadPoolExecutor(max_workers=1)
+        self._lock = threading.Lock()
 
-        print(f'MiniMind模型参数量: {sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.2f}M')
-        return model.eval().to(args.device), tokenizer
+    def _init_model(self):
+        tokenizer = AutoTokenizer.from_pretrained(self.config.model_path)
+        model = AutoModelForCausalLM.from_pretrained(
+            self.config.model_path, 
+            trust_remote_code=True
+        ).eval().to(self.config.device)
+        return model, tokenizer
 
-    def get_response(self, prompt: str, messages=None) -> str:
-        """使用本地模型生成文本（支持chat模板和流式输出）"""
-        setup_seed(random.randint(0, 2048))
-
+    def _prepare_input(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
         if messages is None:
-            messages = [{
-                "role": "system",
-                "content": "你是小柱子，一个温柔、聪明、会讲故事的AI小伙伴，专为儿童设计。。"
-            }]
+            messages = [{"role": "system", "content": DEFAULT_SYSTEM_PROMPT}]
         messages.append({"role": "user", "content": prompt})
+        
+        return self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
 
-        # 构造 prompt
-        if self.model_mode != 0:
-            new_prompt = self.tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
-            new_prompt = new_prompt[-self.max_seq_len:]  # 简化裁剪逻辑
-        else:
-            new_prompt = self.tokenizer.bos_token + prompt
-
+    def get_response(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
+        random.seed(random.randint(0, 2048))
+        input_text = self._prepare_input(prompt, messages)
+        
         print(f'👶: {prompt}')
-        answer = ""
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print('🤖️: ', end='', flush=True)
 
         with torch.no_grad():
-            inputs = self.tokenizer(new_prompt, return_tensors='pt')
-            input_ids = inputs['input_ids'].to(device=device, dtype=torch.long)
-
-            # 处理 pad_token_id 可能为 None
-            pad_token_id = self.tokenizer.pad_token_id
-            if pad_token_id is None:
-                pad_token_id = self.tokenizer.eos_token_id
-
-            # 判断是否支持流式
-            if not hasattr(self.model, "generate"):
-                raise NotImplementedError("当前模型不支持 generate 方法")
-
-            # 生成
-            print('🤖️: ', end='', flush=True)
-            res_y = self.model.generate(
-                input_ids,
-                eos_token_id=self.tokenizer.eos_token_id,
-                max_new_tokens=self.max_seq_len,
-                temperature=self.temperature,
-                top_p=self.top_p,
+            inputs = self.tokenizer(
+                input_text, 
+                return_tensors='pt', 
+                truncation=True
+            ).to(self.config.device)
+            
+            outputs = self.model.generate(
+                inputs.input_ids,
+                max_new_tokens=self.config.max_new_tokens,
+                temperature=self.config.temperature,
+                top_p=self.config.top_p,
                 do_sample=True,
-                pad_token_id=pad_token_id
+                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id
+            )
+            
+            response = self.tokenizer.decode(
+                outputs[0][inputs.input_ids.shape[1]:],
+                skip_special_tokens=True
+            )
+            print(response.strip())
+            return response.strip()
+
+    def stream_chat(self, prompt: str, messages: Optional[List[Dict]] = None) -> Generator:
+        with self._lock:
+            input_text = self._prepare_input(prompt, messages)
+            inputs = self.tokenizer(
+                input_text,
+                return_tensors="pt",
+                truncation=True
+            ).to(self.config.device)
+
+            print(f'👶: {prompt}')
+            
+            streamer = TextIteratorStreamer(
+                self.tokenizer, 
+                skip_prompt=True,
+                skip_special_tokens=True
             )
 
-            output_ids = res_y[0][input_ids.shape[1]:]
-            answer = self.tokenizer.decode(output_ids, skip_special_tokens=True)
-            print(answer.strip())
+            self.executor.submit(
+                self.model.generate,
+                inputs.input_ids,
+                max_length=self.config.max_seq_len + self.config.max_new_tokens,
+                temperature=self.config.temperature,
+                top_p=self.config.top_p,
+                do_sample=True,
+                streamer=streamer
+            )
 
-        return answer.strip()
-
+            for text in streamer:
+                yield text
 
