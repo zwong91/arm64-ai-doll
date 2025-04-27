@@ -133,10 +133,12 @@ echo ">>> ✅ 构建完成，输出目录为 dist/arm64_ai_doll"
 
 # 获取当前 Git 版本号
 GIT_VER=$(git rev-parse --short HEAD)
+#GIT_VER=v0.0.3
 OUTPUT_NAME="arm64_ai_doll_${GIT_VER}.zip"
 
 echo ">>> 16. 压缩构建输出为 $OUTPUT_NAME"
 
+cp -r keyword.mp3 dist/arm64_ai_doll/
 # 进入 dist/
 cd dist
 
