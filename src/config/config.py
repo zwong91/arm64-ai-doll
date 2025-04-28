@@ -14,6 +14,7 @@ class Config:
         self.input_device = input_device
         self.output_device = output_device
         self.vad_model = vad_model
+        self.silence_duration = 1.0
         self.sample_rate = sample_rate
         self.tts_model = tts_model
         self.llm_model = llm_model 
