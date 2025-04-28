@@ -9,12 +9,11 @@ class Recorder:
     def __init__(self, sample_rate=16000, input_device=None, vad_model_path="vad_ckpt/silero_vad.onnx"):
         self.sample_rate = sample_rate
         self.input_device = input_device
-        self.vad_model_path = resource_path(vad_model_path)
         if self.input_device is None:
             self.input_device = sd.default.device[0]
         # 初始化VAD
         vad_config = sherpa_onnx.VadModelConfig()
-        vad_config.silero_vad.model = vad_model_path
+        vad_config.silero_vad.model = resource_path(vad_model_path)
 
         vad_config.silero_vad.threshold = 0.5
         vad_config.silero_vad.min_silence_duration = 0.25  # seconds
