@@ -88,9 +88,6 @@ pip install -r requirements.txt
 
 
 echo ">>> 13. 使用 PyInstaller 构建 arm64_ai_doll"
-pip install pyinstaller
-
-
 echo ">>>14. 编译安装 PortAudio"
 apt-get update && apt-get install -y \
     build-essential \

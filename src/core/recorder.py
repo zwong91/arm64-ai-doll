@@ -27,6 +27,14 @@ class Recorder:
         vad_config.sample_rate = sample_rate
         self.vad = sherpa_onnx.VoiceActivityDetector(vad_config, buffer_size_in_seconds=30)
 
+    @staticmethod
+    def list_devices():
+        devices = sd.query_devices()
+        print("\n可用的音频设备:")
+        for i, dev in enumerate(devices):
+            print(f"{i}: {dev['name']} (输入通道: {dev['max_input_channels']}, 输出通道: {dev['max_output_channels']})")
+        return devices
+
     def record_until_silence(self, silence_duration=1.0, enable_noise_reduction=True):
         chunk_duration = 0.1  # 秒
         chunk_size = int(self.sample_rate * chunk_duration)

@@ -243,7 +243,7 @@ def main():
         args = parser.parse_args()
         
         if args.list_devices:
-            AudioManager.list_devices()
+            Recorder.list_devices()
             return
 
         config = Config(
