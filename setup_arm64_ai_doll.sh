@@ -12,6 +12,7 @@ apt update && apt install -y \
   libreadline-dev \
   libsqlite3-dev \
   zlib1g-dev \
+  liblzma-dev \
   wget \
   curl \
   zip \
