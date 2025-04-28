@@ -61,15 +61,18 @@ apt update && apt install -y \
   liblzma-dev \
   wget \
   curl \
+  zip \
+  unzip \
   git \
   git-lfs \
   make \
   gcc \
   g++ \
   python3-venv \
-  ca-certificates
-
-apt update && apt install -y libportaudio2 libportaudiocpp0 portaudio19-dev
+  ca-certificates \
+  libportaudio2 \
+  libportaudiocpp0 \
+  portaudio19-dev
 
 ```
 

@@ -136,8 +136,7 @@ OUTPUT_NAME="arm64_ai_doll_${GIT_VER}.zip"
 
 echo ">>> 16. 压缩构建输出为 $OUTPUT_NAME"
 
-cp -r keyword.mp3 dist/arm64_ai_doll/
-cp libportaudio2_19.6.0-1.2+b3_arm64.deb  dist/arm64_ai_doll/
+cp -r *.mp3 dist/arm64_ai_doll/
 
 # 进入 dist/
 cd dist
