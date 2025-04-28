@@ -17,6 +17,7 @@ apt update && apt install -y \
   curl \
   zip \
   unzip \
+  p7zip-full \
   git \
   git-lfs \
   make \
@@ -129,9 +130,10 @@ echo ">>> ✅ 构建完成，输出目录为 dist/arm64_ai_doll"
 
 # 获取当前 Git 版本号
 GIT_VER=$(git rev-parse --short HEAD)
-OUTPUT_NAME="arm64_ai_doll_${GIT_VER}.zip"
+#OUTPUT_ZIP_NAME="arm64_ai_doll_${GIT_VER}.zip"
+OUTPUT_7Z_NAME="arm64_ai_doll_${GIT_VER}.7z"
 
-echo ">>> 16. 压缩构建输出为 $OUTPUT_NAME"
+echo ">>> 16. 压缩构建输出为 $OUTPUT_7Z_NAME"
 
 cp -r *.mp3 dist/arm64_ai_doll/
 
@@ -139,11 +141,12 @@ cp -r *.mp3 dist/arm64_ai_doll/
 cd dist
 
 # 打包 arm64_ai_doll 目录（保持结构），输出在 dist 目录外
-zip -r "../$OUTPUT_NAME" arm64_ai_doll
+#zip -r "../$OUTPUT_ZIP_NAME" arm64_ai_doll
+7z a "../$OUTPUT_7Z_NAME" arm64_ai_doll
 
 # 回到原目录
 cd ..
 
-echo ">>> ✅ 压缩完成：$(realpath $OUTPUT_NAME)"
-echo ">>> 📦 文件大小：$(du -sh $OUTPUT_NAME | cut -f1)"
+echo ">>> ✅ 压缩完成：$(realpath $OUTPUT_7Z_NAME)"
+echo ">>> 📦 文件大小：$(du -sh $OUTPUT_7Z_NAME | cut -f1)"
 

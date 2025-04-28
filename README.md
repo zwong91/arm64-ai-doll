@@ -63,6 +63,7 @@ apt update && apt install -y \
   curl \
   zip \
   unzip \
+  p7zip-full \
   git \
   git-lfs \
   make \
@@ -170,6 +171,8 @@ python main.py --list-devices
 
 python main.py -f input.wav --output-device "蓝牙耳机"
 
+
+# 如果有默认的麦克风和扬声器 参数input/output device 不填写
 ./arm64_ai_doll --list-devices
 ./arm64_ai_doll -i --input-device "麦克风<name or ID>" --output-device "扬声器<name or ID>"
 
