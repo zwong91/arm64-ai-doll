@@ -144,7 +144,7 @@ class VoiceAssistant:
 
             text = self._process_audio_to_text(audio)
             if not text:
-                return None
+                text = "我听不懂你说什么"
 
             response = self._generate_response(text)
             self._synthesize_response(response)
