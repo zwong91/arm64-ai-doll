@@ -6,9 +6,11 @@ from typing import Generator, Optional, List, Dict, Union
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
+from ..utils.resource_utils import resource_path
+
 @dataclass
 class LLMConfig:
-    model_path: str = 'model/minimind_tokenizer'
+    model_path: str = 'MiniMind2'
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     max_seq_len: int = 200
     max_new_tokens: int = 64
@@ -30,7 +32,7 @@ class LocalLLMClient:
         self._lock = threading.Lock()
 
     def _init_model(self):
-        tokenizer = AutoTokenizer.from_pretrained(self.config.model_path)
+        tokenizer = AutoTokenizer.from_pretrained(resource_path(self.config.model_path))
         model = AutoModelForCausalLM.from_pretrained(
             self.config.model_path, 
             trust_remote_code=True
