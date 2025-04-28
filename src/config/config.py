@@ -1,7 +1,7 @@
 class Config:
     def __init__(
         self,
-        asr_model: str = "whisper",
+        asr_model: str = "sensevoice",
         input_device: str = "default",
         output_device: str = "default",
         vad_model: str = "vad_ckpt/silero_vad.onnx",
