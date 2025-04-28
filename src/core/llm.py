@@ -18,7 +18,7 @@ class LLMConfig:
     top_p: float = 0.85
     
 # -*- coding: utf-8 -*-
-DEFAULT_SYSTEM_PROMPT = "你是小柱子，只会说中文，一个温柔、聪明、会讲故事的AI小伙伴， 专为儿童设计。"
+DEFAULT_SYSTEM_PROMPT = "我是小柱子，一个温柔、聪明、会讲故事的AI小伙伴， 专为儿童设计。"
 
 class LocalLLMClient:
     def __init__(self, config: Union[str, LLMConfig]):
