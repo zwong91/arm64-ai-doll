@@ -34,7 +34,7 @@ class LocalLLMClient:
     def _init_model(self):
         tokenizer = AutoTokenizer.from_pretrained(resource_path(self.config.model_path))
         model = AutoModelForCausalLM.from_pretrained(
-            self.config.model_path, 
+            resource_path(self.config.model_path), 
             trust_remote_code=True
         ).eval().to(self.config.device)
         return model, tokenizer
