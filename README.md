@@ -58,6 +58,7 @@ apt update && apt install -y \
   libreadline-dev \
   libsqlite3-dev \
   zlib1g-dev \
+  liblzma-dev \
   wget \
   curl \
   git \
@@ -86,7 +87,7 @@ cd Python-3.10.13
 make -j2
 make install
 
-### Or 用 pyenv 安装（适用于 ARM64）
+### 或者 用 pyenv 安装（适用于 ARM64）
 # 安装 pyenv
 curl https://pyenv.run | bash
 
