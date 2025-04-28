@@ -353,6 +353,8 @@ https://packages.debian.org/sid/libportaudio2
 ```bash
 apt-get install --download-only libportaudio2
 
+cd Offline-PortAudio
+dpkg -i *.deb
 
 ```
 
