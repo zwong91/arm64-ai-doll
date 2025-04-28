@@ -118,4 +118,4 @@
 - 将 `.deb` 包复制到离线机器后，使用 `dpkg -i` 安装它们。
 - 如果遇到依赖问题，使用 `apt --fix-broken install` 来修复。
 
-这样就能在没有网络连接的 Debian 11 系统上成功离线安装 `libportaudio2` 及其依赖。
+这样就能在没有网络连接的 Debian 10 系统上成功离线安装 `libportaudio2` 及其依赖。

@@ -292,6 +292,12 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-o
 tar xf sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
 rm sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
 
+
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-icefall-zh-aishell3.tar.bz2
+tar xvf vits-icefall-zh-aishell3.tar.bz2
+rm vits-icefall-zh-aishell3.tar.bz2
+
+
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
 tar xvf sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
 rm sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2

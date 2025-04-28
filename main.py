@@ -215,13 +215,14 @@ class VoiceAssistant:
                 text = self.stt.transcribe(sample_rate, audio)
 
             response = self._generate_response(text)
+            self._synthesize_response(response)
 
-            os.makedirs(output_dir, exist_ok=True)
-            output_file = os.path.join(output_dir, f"{time.strftime('%Y%m%d-%H%M%S')}-speech.wav")
-            with self._time_it("语音合成"):
-                self.tts.synthesize(response, output_file)
+            # os.makedirs(output_dir, exist_ok=True)
+            # output_file = os.path.join(output_dir, f"{time.strftime('%Y%m%d-%H%M%S')}-speech.wav")
+            # with self._time_it("语音合成"):
+            #     self.tts.synthesize(response, output_file)
 
-            logging.info(f"saved to: {output_file}")
+            # logging.info(f"saved to: {output_file}")
             logging.info(f"总耗时: {time.time() - all_start:.2f}秒")
             # Sleep
             time.sleep(10)
