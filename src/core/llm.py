@@ -40,7 +40,8 @@ class LocalLLMClient:
         return model, tokenizer
 
     def _prepare_input(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
-        messages = [{"role": "assistant", "content": DEFAULT_SYSTEM_PROMPT}]
+        #messages = [{"role": "assistant", "content": DEFAULT_SYSTEM_PROMPT}]
+        messages = []
         messages.append({"role": "user", "content": prompt})
         
         return self.tokenizer.apply_chat_template(
@@ -51,21 +52,20 @@ class LocalLLMClient:
 
     def get_response(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
         random.seed(random.randint(0, 2048))
-        input_text = self._prepare_input(prompt, messages)
+        new_prompt = self._prepare_input(prompt, messages)
         
         print(f'👶: {prompt}')
-        print('🤖️: ', end='', flush=True)
 
         streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
         with torch.no_grad():
             inputs = self.tokenizer(
-                input_text, 
+                new_prompt, 
                 return_tensors='pt', 
                 truncation=True
             ).to(self.config.device)
-            
+            print('🤖️: ', end='', flush=True)
             generated_ids = self.model.generate(
-                inputs.input_ids,
+                inputs["input_ids"],
                 max_new_tokens=self.config.max_new_tokens,
                 num_return_sequences=1,
                 do_sample=True,
@@ -78,10 +78,11 @@ class LocalLLMClient:
             )
             
             response = self.tokenizer.decode(
-                generated_ids[0][inputs.input_ids.shape[1]:],
+                generated_ids[0][inputs["input_ids"].shape[1]:], 
                 skip_special_tokens=True
             )
             print(response.strip())
+            print('\n\n')
             return response.strip()
 
     def stream_chat(self, prompt: str, messages: Optional[List[Dict]] = None) -> Generator:
