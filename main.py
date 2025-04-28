@@ -136,6 +136,8 @@ class VoiceAssistant:
                     if result:
                         logging.info(f"检测到关键词: {result}")
                         self.is_awake_mode = False  # 切换到语音识别模式
+                        self._synthesize_response("我在我在")
+                        return response
                     else:
                         logging.info("未检测到关键词")
                         return None
@@ -221,6 +223,8 @@ class VoiceAssistant:
 
             logging.info(f"saved to: {output_file}")
             logging.info(f"总耗时: {time.time() - all_start:.2f}秒")
+            # Sleep
+            time.sleep(10)
         except Exception as e:
             logging.error(f"处理音频文件时出错: {str(e)}")
 
