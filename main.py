@@ -149,19 +149,30 @@ class VoiceAssistant:
             stream = True
             if stream:
                 buffer = ""
+                seg_idx = 1  # 句子序号从 1 开始
+
                 for delta in self._generate_response(text, stream=True):
                     buffer += delta
                     sentences = smart_split(buffer)
+
                     # 只处理完整的句子，保留最后一段 incomplete 的
-                    for sentence in sentences[:-1]:
+                    complete = sentences[:-1]
+                    for sentence in complete:
+                        print(f"seg {seg_idx}: {sentence}\n")
                         self._synthesize_response(sentence)
+                        seg_idx += 1
+
+                    # 保留最后一个不完整的片段
                     buffer = sentences[-1] if sentences else buffer
 
-                # 处理剩下的内容
+                # 处理剩下的残余内容
                 if buffer.strip():
+                    print(f"seg {seg_idx}: {buffer}\n")
                     self._synthesize_response(buffer)
+
             else:
                 response = self._generate_response(text)
+                print(f"seg 1: {response}\n")
                 self._synthesize_response(response)
             return response
 
@@ -232,20 +243,32 @@ class VoiceAssistant:
             stream = True
             if stream:
                 buffer = ""
+                seg_idx = 1  # 句子序号从 1 开始
+
                 for delta in self._generate_response(text, stream=True):
                     buffer += delta
                     sentences = smart_split(buffer)
+
                     # 只处理完整的句子，保留最后一段 incomplete 的
-                    for sentence in sentences[:-1]:
+                    complete = sentences[:-1]
+                    for sentence in complete:
+                        print(f"seg {seg_idx}: {sentence}\n")
                         self._synthesize_response(sentence)
+                        seg_idx += 1
+
+                    # 保留最后一个不完整的片段
                     buffer = sentences[-1] if sentences else buffer
 
-                # 处理剩下的内容
+                # 处理剩下的残余内容
                 if buffer.strip():
+                    print(f"seg {seg_idx}: {buffer}\n")
                     self._synthesize_response(buffer)
+
             else:
                 response = self._generate_response(text)
+                print(f"seg 1: {response}\n")
                 self._synthesize_response(response)
+
 
             # os.makedirs(output_dir, exist_ok=True)
             # output_file = os.path.join(output_dir, f"{time.strftime('%Y%m%d-%H%M%S')}-speech.wav")
