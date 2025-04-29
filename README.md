@@ -1,14 +1,53 @@
+
 ---
 
-# 语音助手
+# 离线本地语音助手系统（基于 Fast-Whisper、MiniMind2 和 Sherpa-ONNX）
 
-基于 fast-whisper、Minimind 和 sherpa-onnx 的离线本地语音助手系统。
-支持流式的关键词唤醒KWS和语音识别ASR、文本转语音TTS、热词Hotwords等，且整个过程中无需互联网，可以没有GPU，
-建议有3TOPS 的 TPU, 适合部署在边缘侧/用户侧设备上。
+本系统支持：
+
+- ✅ 流式关键词唤醒（KWS）
+- ✅ 流式语音识别（ASR）
+- ✅ 文本转语音（TTS）
+- ✅ 热词增强（Hotwords）
+- ✅ 全程离线运行（无需互联网）
+- ✅ 无需 GPU，建议使用 **≥3TOPS 的 TPU**
+- ✅ 适合部署在 **边缘侧 / 用户侧设备**
+
+---
+
+## 🧠 MiniMind2 Series 模型训练流程
+
+MiniMind2 系列模型使用约 20GB 语料（≈ 4B tokens）训练完成。
+
+### 1. 📘 预训练（Pretrain）
+
+- **输入：** 大量原始数据（表示为 💾💾💾...）
+- **处理文件：** `pretrain_hq.jsonl` (~1.6G)
+- **输出：** 初始模型 / 中间状态数据
+
+---
+
+### 2. 🧪 监督微调（Supervised Fine-Tuning - SFT）
+
+- **输入：** 预训练阶段的模型输出
+- **处理文件：**
+  - `sft_512.jsonl` (~7.5G)
+  - `sft_2048.jsonl` (~9G)
+- **输出：** 微调后的模型
+
+---
+
+### 3. 🧠 基于人类反馈的强化学习（Reinforcement Learning from Human Feedback - RLHF）
+
+- **输入：** 微调模型输出
+- **处理文件：** `dpo.jsonl` (~0.9G)
+- **输出：** ✅ 最终 MiniMind2 Series 模型  
+  表示为：⚛️ **MiniMind2 Series**
+
+---
 
 ## 安装
 ## 🐳 使用 Docker 构建 ARM64 虚拟环境（macOS M1/M2）
----
 
 下面是**在 macOS M1/M2 上使用 Docker 启动 ARM64 Ubuntu 容器并搭建 Python 环境**的详细步骤，适用于你的语音助手（基于 fast-whisper、Minimind、sherpa-onnx）项目开发。
 
