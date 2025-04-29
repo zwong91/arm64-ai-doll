@@ -136,7 +136,7 @@ class VoiceAssistant:
                     if result:
                         logging.info(f"检测到关键词: {result}")
                         self.is_awake_mode = False  # 切换到语音识别模式
-                        self._synthesize_response("我在我在")
+                        self._synthesize_response("我在,我在。")
                         return None
                     else:
                         logging.info("未检测到关键词")

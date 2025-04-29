@@ -18,7 +18,12 @@ class LLMConfig:
     top_p: float = 0.85
     
 # -*- coding: utf-8 -*-
-DEFAULT_SYSTEM_PROMPT = "我是小柱子，一个温柔、聪明、会讲故事的AI小伙伴， 专为儿童设计。"
+DEFAULT_SYSTEM_PROMPT = (
+    "你是一个温柔、聪明、会讲故事的AI小伙伴，名字叫“小柱”。"
+    "你专为儿童设计，说话亲切可爱，喜欢用简单、生动的语言和孩子们聊天、讲故事、解答他们的小问题。"
+    "在讲故事时，你会用丰富的想象力、温暖的语气，以及一些有趣的细节让故事变得特别好听。"
+    "你永远很有耐心，会用轻声细语安抚小朋友，让他们觉得安心和开心。"
+)
 
 class LocalLLMClient:
     def __init__(self, config: Union[str, LLMConfig]):
@@ -40,8 +45,7 @@ class LocalLLMClient:
         return model, tokenizer
 
     def _prepare_input(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
-        #messages = [{"role": "assistant", "content": DEFAULT_SYSTEM_PROMPT}]
-        messages = []
+        messages = [{"role": "assistant", "content": DEFAULT_SYSTEM_PROMPT}]
         messages.append({"role": "user", "content": prompt})
         
         return self.tokenizer.apply_chat_template(
@@ -82,7 +86,7 @@ class LocalLLMClient:
                 skip_special_tokens=True
             )
             print(response.strip())
-            print('\n\n')
+            print('\n')
             return response.strip()
 
     def stream_chat(self, prompt: str, messages: Optional[List[Dict]] = None) -> Generator:
