@@ -281,29 +281,6 @@ if __name__ == "__main__":
 ./arm64_ai_doll -f example.mp3 --output-dir ./outputs/
 ```
 
-### models
-```
-curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2
-tar xf kokoro-multi-lang-v1_0.tar.bz2
-rm kokoro-multi-lang-v1_0.tar.bz2
-
-
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
-tar xf sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
-rm sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
-
-
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-icefall-zh-aishell3.tar.bz2
-tar xvf vits-icefall-zh-aishell3.tar.bz2
-rm vits-icefall-zh-aishell3.tar.bz2
-
-
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
-tar xvf sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
-rm sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2
-mv  sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/*  sensevoice_ckpt
-```
-
 ## 项目结构
 
 ```
@@ -367,4 +344,3 @@ cd Offline-PortAudio
 dpkg -i *.deb
 
 ```
-
