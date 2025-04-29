@@ -172,8 +172,12 @@ class VoiceAssistant:
 
             else:
                 response = self._generate_response(text)
-                print(f"seg 1: {response}\n")
-                self._synthesize_response(response)
+                sentences = smart_split(response)
+                seg_idx = 1
+                for sentence in sentences:
+                    print(f"seg {seg_idx}: {sentence}\n")
+                    self._synthesize_response(sentence)
+                    seg_idx += 1
             return response
 
         except Exception as e:
@@ -266,8 +270,12 @@ class VoiceAssistant:
 
             else:
                 response = self._generate_response(text)
-                print(f"seg 1: {response}\n")
-                self._synthesize_response(response)
+                sentences = smart_split(response)
+                seg_idx = 1
+                for sentence in sentences:
+                    print(f"seg {seg_idx}: {sentence}\n")
+                    self._synthesize_response(sentence)
+                    seg_idx += 1
 
 
             # os.makedirs(output_dir, exist_ok=True)
