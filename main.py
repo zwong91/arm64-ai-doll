@@ -20,7 +20,8 @@ import langid
 
 import asyncio
 from queue import Queue
-from concurrent.futures import ThreadPoolExecutor
+
+from src.utils.utils import smart_split
 
 class VoiceAssistant:
     def __init__(self, config: Config):
@@ -28,7 +29,6 @@ class VoiceAssistant:
         self._validate_config(config)
         self.config = config
         self.tts_queue = Queue()
-        self.executor = ThreadPoolExecutor(max_workers=2)
         
         try:
             self.kws = KeywordSpotter(
@@ -146,8 +146,24 @@ class VoiceAssistant:
             if not text:
                 text = "我听不懂你说什么"
 
-            response = self._generate_response(text)
-            self._synthesize_response(response)
+            stream = True
+            if stream:
+                buffer = ""
+                for delta in self._generate_response(text, stream=True):
+                    buffer += delta
+                    sentences = smart_split(buffer)
+                    print(f"delta: {buffer}")
+                    # 只处理完整的句子，保留最后一段 incomplete 的
+                    for sentence in sentences[:-1]:
+                        self._synthesize_response(sentence)
+                    buffer = sentences[-1] if sentences else buffer
+
+                # 处理剩下的内容
+                if buffer.strip():
+                    self._synthesize_response(buffer)
+            else:
+                response = self._generate_response(text)
+                self._synthesize_response(response)
             return response
 
         except Exception as e:
@@ -180,9 +196,9 @@ class VoiceAssistant:
             logging.error(f"音频转文字失败: {str(e)}")
             return None
 
-    def _generate_response(self, text: str) -> str:
+    def _generate_response(self, text: str, stream: bool = False):
         with self._time_it("LLM响应"):
-            return self.llm.get_response(text)
+            return self.llm.get_response(text, None, stream=stream)
 
     def _synthesize_response(self, response: str) -> None:
         with self._time_it("语音合成"):
@@ -214,8 +230,24 @@ class VoiceAssistant:
             with self._time_it("语音转录"):
                 text = self.stt.transcribe(sample_rate, audio)
 
-            response = self._generate_response(text)
-            self._synthesize_response(response)
+            stream = True
+            if stream:
+                buffer = ""
+                for delta in self._generate_response(text, stream=True):
+                    buffer += delta
+                    sentences = smart_split(buffer)
+                    print(f"delta: {buffer}")
+                    # 只处理完整的句子，保留最后一段 incomplete 的
+                    for sentence in sentences[:-1]:
+                        self._synthesize_response(sentence)
+                    buffer = sentences[-1] if sentences else buffer
+
+                # 处理剩下的内容
+                if buffer.strip():
+                    self._synthesize_response(buffer)
+            else:
+                response = self._generate_response(text)
+                self._synthesize_response(response)
 
             # os.makedirs(output_dir, exist_ok=True)
             # output_file = os.path.join(output_dir, f"{time.strftime('%Y%m%d-%H%M%S')}-speech.wav")

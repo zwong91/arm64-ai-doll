@@ -8,7 +8,7 @@ import sherpa_onnx
 import tempfile
 import soundfile as sf
 
-from src.utils.resource_utils import resource_path
+from src.utils.utils import resource_path
 
 def remove_tags(text: str) -> str:
     return re.sub(r"<\|.*?\|>", "", text)

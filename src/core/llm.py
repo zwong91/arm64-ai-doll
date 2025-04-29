@@ -3,17 +3,21 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer, Text
 import torch
 import random
 from typing import Generator, Optional, List, Dict, Union
-import threading
-from concurrent.futures import ThreadPoolExecutor
 
-from ..utils.resource_utils import resource_path
+from threading import Thread
+from queue import Queue
+
+from ..utils.utils import resource_path
+
+import warnings
+warnings.filterwarnings('ignore')
 
 @dataclass
 class LLMConfig:
     model_path: str = 'MiniMind2'
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    max_seq_len: int = 200
-    max_new_tokens: int = 64
+    max_seq_len: int = 512
+    max_new_tokens: int = 128
     temperature: float = 1.0
     top_p: float = 0.85
     
@@ -25,6 +29,17 @@ DEFAULT_SYSTEM_PROMPT = (
     "你永远很有耐心，会用轻声细语安抚小朋友，让他们觉得安心和开心。"
 )
 
+class CustomStreamer(TextStreamer):
+    def __init__(self, tokenizer, queue):
+        super().__init__(tokenizer, skip_prompt=True, skip_special_tokens=True)
+        self.queue = queue
+        self.tokenizer = tokenizer
+
+    def on_finalized_text(self, text: str, stream_end: bool = False):
+        self.queue.put(text)
+        if stream_end:
+            self.queue.put(None)
+
 class LocalLLMClient:
     def __init__(self, config: Union[str, LLMConfig]):
         # 如果传入字符串，转换为 LLMConfig
@@ -33,8 +48,6 @@ class LocalLLMClient:
         else:
             self.config = config
         self.model, self.tokenizer = self._init_model()
-        self.executor = ThreadPoolExecutor(max_workers=1)
-        self._lock = threading.Lock()
 
     def _init_model(self):
         tokenizer = AutoTokenizer.from_pretrained(resource_path(self.config.model_path))
@@ -52,74 +65,81 @@ class LocalLLMClient:
             messages,
             tokenize=False,
             add_generation_prompt=True
-        )
+        )[-self.config.max_seq_len:]
 
-    def get_response(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
-        random.seed(random.randint(0, 2048))
-        new_prompt = self._prepare_input(prompt, messages)
-        
-        print(f'👶: {prompt}')
 
-        streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
-        with torch.no_grad():
-            inputs = self.tokenizer(
-                new_prompt, 
-                return_tensors='pt', 
-                truncation=True
-            ).to(self.config.device)
-            print('🤖️: ', end='', flush=True)
-            generated_ids = self.model.generate(
-                inputs["input_ids"],
-                max_new_tokens=self.config.max_new_tokens,
-                num_return_sequences=1,
-                do_sample=True,
-                attention_mask=inputs["attention_mask"],
-                pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-                streamer=streamer,
-                top_p=self.config.top_p,
-                temperature=self.config.temperature,
-            )
+    def generate_stream_response(self, prompt: str, messages):
+        try:
             
-            response = self.tokenizer.decode(
-                generated_ids[0][inputs["input_ids"].shape[1]:], 
-                skip_special_tokens=True
-            )
-            print(response.strip())
-            print('\n')
-            return response.strip()
-
-    def stream_chat(self, prompt: str, messages: Optional[List[Dict]] = None) -> Generator:
-        with self._lock:
-            input_text = self._prepare_input(prompt, messages)
-            inputs = self.tokenizer(
-                input_text,
-                return_tensors="pt",
-                truncation=True
-            ).to(self.config.device)
-
+            new_prompt = self._prepare_input(prompt, messages)
             print(f'👶: {prompt}')
-            
-            streamer = TextIteratorStreamer(
-                self.tokenizer, 
-                skip_prompt=True,
-                skip_special_tokens=True
-            )
+            inputs = self.tokenizer(new_prompt, return_tensors="pt", truncation=True).to(self.config.device)
 
-            self.executor.submit(
-                self.model.generate,
-                inputs.input_ids,
-                max_length=self.config.max_seq_len + self.config.max_new_tokens,
-                num_return_sequences=1,
-                do_sample=True,
-                attention_mask=inputs["attention_mask"],
-                pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-                streamer=streamer,
-                top_p=self.config.top_p,
-                temperature=self.config.temperature,
-            )
+            queue = Queue()
+            streamer = CustomStreamer(self.tokenizer, queue)
+            def _generate():
+                self.model.generate(
+                    inputs.input_ids,
+                    max_new_tokens=self.config.max_new_tokens,
+                    do_sample=True,
+                    temperature=self.config.temperature,
+                    top_p=self.config.top_p,
+                    attention_mask=inputs.attention_mask,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    streamer=streamer
+                )
 
-            for text in streamer:
+            Thread(target=_generate).start()
+
+            while True:
+                text = queue.get()
+                if text is None:
+                    #"finish_reason": "stop"
+                    break
                 yield text
+
+        except Exception as e:
+            yield f"[ERROR] {str(e)}"
+        
+
+    def get_response(self, prompt: str, messages: Optional[List[Dict]] = None, stream: bool = False):
+        random.seed(random.randint(0, 2048))
+        if stream:
+            def stream_generator():
+                for chunk in self.generate_stream_response(prompt, messages):
+                    yield chunk
+
+            return stream_generator()
+        else:        
+            new_prompt = self._prepare_input(prompt, messages)
+            print(f'👶: {prompt}')
+            streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
+            with torch.no_grad():
+                inputs = self.tokenizer(
+                    new_prompt, 
+                    return_tensors='pt', 
+                    truncation=True
+                ).to(self.config.device)
+                print('🤖️: ', end='', flush=True)
+                generated_ids = self.model.generate(
+                    inputs["input_ids"],
+                    max_length=inputs["input_ids"].shape[1] + self.config.max_new_tokens,
+                    num_return_sequences=1,
+                    do_sample=True,
+                    attention_mask=inputs["attention_mask"],
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    streamer=streamer,
+                    top_p=self.config.top_p,
+                    temperature=self.config.temperature,
+                )
+                
+                #截去 prompt 部分
+                answer = self.tokenizer.decode(
+                    generated_ids[0][inputs["input_ids"].shape[1]:], 
+                    skip_special_tokens=True
+                )
+                print('\n')
+                return answer
 

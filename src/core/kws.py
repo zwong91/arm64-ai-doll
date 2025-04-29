@@ -2,7 +2,7 @@ import sounddevice as sd
 import sherpa_onnx
 from pathlib import Path
 from typing import Optional, List
-from ..utils.resource_utils import resource_path
+from ..utils.utils import resource_path
 
 import os
 import platform

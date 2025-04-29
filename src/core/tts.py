@@ -10,7 +10,7 @@ import sherpa_onnx
 import soundfile as sf
 import sounddevice as sd
 
-from ..utils.resource_utils import resource_path
+from ..utils.utils import resource_path
 
 
 buffer = queue.Queue()

@@ -9,7 +9,7 @@ from typing import Tuple
 
 import numpy as np
 
-from ..utils.resource_utils import resource_path
+from ..utils.utils import resource_path
 
 class SpeechEnhancer:
     def __init__(self, model_path: str = "speech-enhancement/gtcrn_simple.onnx", device: str = "cpu", **kwargs):

@@ -13,7 +13,7 @@ import logging
 import sherpa_onnx
 
 logger = logging.getLogger(__name__)
-from ..utils.resource_utils import resource_path
+from ..utils.utils import resource_path
 
 class AsrHandler:
     def __init__(self, model_path, debug=False):
