@@ -54,10 +54,6 @@ echo ">>> 6. 克隆项目代码"
 # git clone https://github.com/zwong91/arm64-ai-doll.git
 # cd arm64-ai-doll
 
-echo ">>> 7. 安装 Python 依赖（包括 numpy 降级）"
-pip uninstall -y numpy
-pip install "numpy<2"
-
 echo ">>> 8. 下载语音合成模型 (TTS)"
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2
 tar xvf kokoro-multi-lang-v1_0.tar.bz2
@@ -68,7 +64,7 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.11.3/sherpa-onnx
 tar xvf sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
 rm sherpa-onnx-v1.11.3-linux-aarch64-static.tar.bz2
 
-pip install huggingface_hub
+#pip install huggingface_hub
 
 
 echo ">>> 10. 下载 MiniMind 模型"
@@ -84,9 +80,10 @@ git clone https://huggingface.co/Systran/faster-whisper-tiny
 mkdir -p whisper_ckpt
 mv faster-whisper-tiny/* whisper_ckpt/
 
-echo ">>> 12. 安装 Python 项目依赖"
+echo ">>> 12. 安装 Python 项目依赖（包括 numpy 降级）"
 pip install -r requirements.txt
-
+pip uninstall -y numpy
+pip install "numpy<2"
 
 echo ">>> 13. 使用 PyInstaller 构建 arm64_ai_doll"
 echo ">>>14. 编译安装 PortAudio"
