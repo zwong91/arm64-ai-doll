@@ -208,7 +208,7 @@ python main.py -f path/to/audio.wav
 
 python main.py --list-devices
 
-python main.py -f input.wav --output-device "蓝牙耳机"
+OPENBLAS_NUM_THREADS=1 python main.py -f input.wav --output-device "蓝牙耳机"
 
 
 # 如果有默认的麦克风和扬声器 参数input/output device 不填写
