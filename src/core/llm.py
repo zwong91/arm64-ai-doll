@@ -83,6 +83,7 @@ class LocalLLMClient:
                     max_new_tokens=self.config.max_new_tokens,
                     do_sample=True,
                     temperature=self.config.temperature,
+                    repetition_penalty=1.2,
                     top_p=self.config.top_p,
                     attention_mask=inputs.attention_mask,
                     pad_token_id=self.tokenizer.pad_token_id,
@@ -133,6 +134,7 @@ class LocalLLMClient:
                     streamer=streamer,
                     top_p=self.config.top_p,
                     temperature=self.config.temperature,
+                    repetition_penalty=1.2,
                 )
                 
                 #截去 prompt 部分
