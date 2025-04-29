@@ -152,7 +152,6 @@ class VoiceAssistant:
                 for delta in self._generate_response(text, stream=True):
                     buffer += delta
                     sentences = smart_split(buffer)
-                    print(f"delta: {buffer}")
                     # 只处理完整的句子，保留最后一段 incomplete 的
                     for sentence in sentences[:-1]:
                         self._synthesize_response(sentence)
@@ -236,7 +235,6 @@ class VoiceAssistant:
                 for delta in self._generate_response(text, stream=True):
                     buffer += delta
                     sentences = smart_split(buffer)
-                    print(f"delta: {buffer}")
                     # 只处理完整的句子，保留最后一段 incomplete 的
                     for sentence in sentences[:-1]:
                         self._synthesize_response(sentence)
