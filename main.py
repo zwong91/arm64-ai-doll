@@ -146,7 +146,7 @@ class VoiceAssistant:
             if not text:
                 text = "我听不懂你说什么"
 
-            stream = True
+            stream = False
             if stream:
                 buffer = ""
                 seg_idx = 1  # 句子序号从 1 开始

@@ -35,11 +35,13 @@ def generated_audio_callback(samples: np.ndarray, progress: float):
     return 0 if killed else 1
 
 
-def play_audio_callback(outdata: np.ndarray, frames: int, time, status: sd.CallbackFlags):
+def play_audio_callback(outdata: np.ndarray, frames: int, cbtime, status: sd.CallbackFlags):
     if killed:
         event.set()
 
+    #当 buffer 空时，等几毫秒再播，降低 underrun 几率
     if buffer.empty():
+        time.sleep(0.01)  # 等待 10ms
         outdata.fill(0)
         return
 
@@ -198,15 +200,15 @@ class TextToSpeech:
             started = False
             stopped = False
 
-            with play_thread_lock:
-                if not play_thread_started:
-                    threading.Thread(target=play_audio, daemon=True).start()
-                    play_thread_started = True
-
             start = time.time()
             audio = tts.generate(text, sid=sid, speed=self.speed,
                                  callback=generated_audio_callback,)
             end = time.time()
+            # 等缓冲区有数据后再播放
+            with play_thread_lock:
+                if not play_thread_started:
+                    threading.Thread(target=play_audio, daemon=True).start()
+                    play_thread_started = True
 
             stopped = True
 
