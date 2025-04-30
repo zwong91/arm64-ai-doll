@@ -127,23 +127,30 @@ echo ">>> ✅ 构建完成，输出目录为 dist/arm64_ai_doll"
 
 # 获取当前 Git 版本号
 GIT_VER=$(git rev-parse --short HEAD)
-#OUTPUT_ZIP_NAME="arm64_ai_doll_${GIT_VER}.zip"
-OUTPUT_7Z_NAME="arm64_ai_doll_${GIT_VER}.7z"
+
+# 获取 glibc 版本
+GLIBC_VER=$(ldd --version | head -n1 | awk '{print $NF}' | tr '.' '_')
+
+# 获取操作系统版本（如 debian11）
+OS_VER=$(source /etc/os-release && echo "${ID}${VERSION_ID}")
+
+# 最终输出文件名
+OUTPUT_7Z_NAME="arm64_ai_doll_${OS_VER}_glibc${GLIBC_VER}_${GIT_VER}.7z"
 
 echo ">>> 16. 压缩构建输出为 $OUTPUT_7Z_NAME"
 
+# 拷贝 mp3 到打包目录
 cp -r *.mp3 dist/arm64_ai_doll/
 
 # 进入 dist/
 cd dist
 
-# 打包 arm64_ai_doll 目录（保持结构），输出在 dist 目录外
-#zip -r "../$OUTPUT_ZIP_NAME" arm64_ai_doll
+# 使用 7z 压缩目录
 7z a "../$OUTPUT_7Z_NAME" arm64_ai_doll
 
 # 回到原目录
 cd ..
 
+# 显示压缩结果信息
 echo ">>> ✅ 压缩完成：$(realpath $OUTPUT_7Z_NAME)"
 echo ">>> 📦 文件大小：$(du -sh $OUTPUT_7Z_NAME | cut -f1)"
-

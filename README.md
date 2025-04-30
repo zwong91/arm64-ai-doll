@@ -76,6 +76,14 @@ docker run -it --platform linux/arm64 \
   bash
 
 
+docker run -it --platform linux/arm64 \
+  -v "$(pwd)":/mnt/ \
+  arm64v8/debian:12-slim \
+  bash
+
+root@:/# ldd --version
+ldd (Debian GLIBC 2.36-9+deb12u10) 2.36
+
 docker ps
 docker exec -it <container_id> bash
 docker cp 9ebe94e97c12:/root/arm64-ai-doll/xxx.zip ./
@@ -179,6 +187,7 @@ cd arm64-ai-doll
 
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
+pip install -r requirements.txt
 pip uninstall -y numpy
 pip install "numpy<2"
 
@@ -378,7 +387,7 @@ https://packages.debian.org/sid/libportaudio2
 
 ```bash
 apt-get install --download-only libportaudio2
-
+cp -r /var/cache/apt/archives/*.deb  Offline-PortAudio
 cd Offline-PortAudio
 dpkg -i *.deb
 

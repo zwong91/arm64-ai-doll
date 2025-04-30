@@ -37,7 +37,6 @@ def resolve_input_device(device):
 class Recorder:
     def __init__(self, sample_rate=16000, input_device=None, vad_model_path="vad_ckpt/silero_vad.onnx"):
         self.sample_rate = sample_rate
-        self.input_device = input_device
         self.input_device = resolve_input_device(input_device)
         # 初始化VAD
         vad_config = sherpa_onnx.VadModelConfig()
@@ -65,7 +64,7 @@ class Recorder:
     def record_until_silence(self, silence_duration=1.0, enable_noise_reduction=True):
         chunk_duration = 0.1  # 秒
         chunk_size = int(self.sample_rate * chunk_duration)
-        silence_chunks = int(silence_duration / chunk_duration * 1.1)
+        silence_chunks = int(silence_duration / chunk_duration)
 
         recorded = []
         silence_counter = 0
