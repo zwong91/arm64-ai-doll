@@ -16,7 +16,7 @@ def resolve_input_device(device):
     # 如果是合法的设备编号
     if isinstance(device, int):
         if 0 <= device < len(devices) and devices[device]["max_input_channels"] > 0:
-            return device
+            return device, devices[device]["name"]
         else:
             print(f"[WARN] 无效输入设备编号 {device}，尝试自动选择")
 
@@ -24,20 +24,26 @@ def resolve_input_device(device):
     if isinstance(device, str):
         for i, dev in enumerate(devices):
             if device.lower() in dev["name"].lower() and dev["max_input_channels"] > 0:
-                return i
+                print(f"使用输入设备: {device_name} (#{device_id})")
+                return i, dev["name"]
         print(f"[WARN] 找不到名为 '{device}' 的输入设备，尝试自动选择")
 
     # 自动 fallback 到第一个有输入通道的设备
     for i, dev in enumerate(devices):
         if dev["max_input_channels"] > 0:
             print(f"[INFO] 自动选择输入设备: {dev['name']} (#{i})")
-            return i
+            return i, dev["name"]
 
     raise RuntimeError("未找到可用的输入设备")
+
 class Recorder:
     def __init__(self, sample_rate=16000, input_device=None, vad_model_path="vad_ckpt/silero_vad.onnx"):
         self.sample_rate = sample_rate
-        self.input_device = resolve_input_device(input_device)
+        device_id, device_name = resolve_input_device("default")
+
+        self.input_device = device_id
+        self.device_name = device_name
+
         # 初始化VAD
         vad_config = sherpa_onnx.VadModelConfig()
         vad_config.silero_vad.model = resource_path(vad_model_path)
