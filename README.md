@@ -70,15 +70,20 @@ docker buildx ls
 ### 2. 拉起 ARM64 架构的 Ubuntu 容器
 
 ```bash
-docker run -it --platform linux/arm64 \
-  -v "$(pwd)":/mnt/ \
-  arm64v8/debian:10.13-slim \
-  bash
-
+# docker run -it --platform linux/arm64 \
+#   -v "$(pwd)":/mnt/ \
+#   arm64v8/debian:10.13-slim \
+#   bash
 
 docker run -it --platform linux/arm64 \
   -v "$(pwd)":/mnt/ \
   arm64v8/debian:12-slim \
+  bash
+
+# RK TPU 转换基于X86
+docker run -it --platform linux/amd64 \
+  -v "$(pwd)":/mnt/ \
+  amd64/debian:12-slim \
   bash
 
 root@:/# ldd --version
