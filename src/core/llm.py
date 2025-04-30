@@ -16,9 +16,10 @@ warnings.filterwarnings('ignore')
 class LLMConfig:
     model_path: str = 'MiniMind2'
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    max_seq_len: int = 8192
-    max_new_tokens: int = 512
-    temperature: float = 1.0
+    max_seq_len: int = 512
+    max_new_tokens: int = 256
+    temperature: float = 0.7
+    repetition_penalty: float = 1.2
     top_p: float = 0.85
     
 # -*- coding: utf-8 -*-
