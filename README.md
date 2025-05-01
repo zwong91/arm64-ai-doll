@@ -90,7 +90,7 @@ root@:/# ldd --version
 ldd (Debian GLIBC 2.36-9+deb12u10) 2.36
 
 docker ps
-docker exec -it <container_id> bash
+docker exec -it 2ba35e6fed09 bash
 docker cp 9ebe94e97c12:/root/arm64-ai-doll/xxx.zip ./
 ```
 
@@ -168,7 +168,7 @@ python --version
 ### 5. 创建并激活虚拟环境
 
 ```bash
-python3.10 -m venv /opt/arm64_venv
+python3.11 -m venv /opt/arm64_venv
 source /opt/arm64_venv/bin/activate
 ```
 

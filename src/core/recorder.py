@@ -48,6 +48,9 @@ class Recorder:
         self.sample_rate = sample_rate
         device_id, device_name = resolve_input_device("default")
 
+        logging.info(f"🎙️ 当前使用输入设备: {device_name} (#{device_id})")
+        sd.default.device = (device_id, None)
+
         self.input_device = device_id
         self.device_name = device_name
 
@@ -65,6 +68,8 @@ class Recorder:
 
         vad_config.sample_rate = sample_rate
         self.vad = sherpa_onnx.VoiceActivityDetector(vad_config, buffer_size_in_seconds=30)
+        
+        self.paused = False
 
     @staticmethod
     def list_devices():
@@ -74,7 +79,7 @@ class Recorder:
             logging.info(f"{i}: {dev['name']} (输入通道: {dev['max_input_channels']}, 输出通道: {dev['max_output_channels']})")
         return devices
 
-    def record_until_silence(self, silence_duration=1.0, enable_noise_reduction=True):
+    def record(self, silence_duration=1.0, enable_noise_reduction=True):
         chunk_duration = 0.1  # 秒
         chunk_size = int(self.sample_rate * chunk_duration)
         silence_chunks = int(silence_duration / chunk_duration)
@@ -93,7 +98,9 @@ class Recorder:
                 logging.info(status)
 
             chunk = indata[:, 0]
-            self.vad.accept_waveform(chunk)
+            # 语言中断
+            if not self.paused:
+                self.vad.accept_waveform(chunk)
 
             if not speech_detected:
                 if self.vad.is_speech_detected():
@@ -142,3 +149,10 @@ class Recorder:
             logging.info(f"语音片段已保存: {filename_for_speech}")
 
         return speech_samples
+    
+
+    def pause_listening(self):
+        self.paused = True
+
+    def resume_listening(self):
+        self.paused = False

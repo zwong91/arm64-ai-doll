@@ -16,6 +16,8 @@ from src.core.speech_denoiser import SpeechEnhancer
 from src.config.config import Config
 import langid
 
+import soundfile as sf
+
 import asyncio
 from queue import Queue
 
@@ -123,7 +125,7 @@ class VoiceAssistant:
 
     def process_conversation(self) -> Optional[str]:
         try:
-            audio = self.recorder.record_until_silence(self.config.silence_duration)
+            audio = self.recorder.record(self.config.silence_duration)
             if not self._validate_audio(audio):
                 return None
 
@@ -299,7 +301,7 @@ def main():
         parser.add_argument('--input-device', default='default')
         parser.add_argument('--output-device', default='default')
         parser.add_argument('--pid-file')
-        parser.add_argument('--vad-model', default='vad_ckpt/silero_vad.onnx', help='Path to silero_vad.onnx')
+        parser.add_argument('--vad-model', default='vad_ckpt/silero_vad.onnx')
         args = parser.parse_args()
         
         if args.list_devices:
