@@ -20,6 +20,7 @@ transformers==4.48.0
 jinja2==3.1.2
 jsonlines==4.0.0
 ujson==5.1.0
+numpy<2
 sherpa-onnx
 tensorboard
 torch==2.2.0

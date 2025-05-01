@@ -140,7 +140,7 @@ tar -xzf Python-3.10.13.tgz
 cd Python-3.10.13
 
 ./configure --enable-optimizations
-make -j2
+make -j8
 make install
 
 ### 或者 用 pyenv 安装（适用于 ARM64）
@@ -168,8 +168,8 @@ python --version
 ### 5. 创建并激活虚拟环境
 
 ```bash
-python3.10 -m venv /opt/arm64_venv
-source /opt/arm64_venv/bin/activate
+python3.10 -m venv /opt/doll
+source /opt/doll/bin/activate
 ```
 
 ---
@@ -190,7 +190,9 @@ git clone https://github.com/zwong91/arm64-ai-doll.git
 # 假设你项目已经挂载到了容器内，比如 /workspace/arm64-ai-doll
 cd arm64-ai-doll
 
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# pip uninstall -y numpy
+# pip install "numpy<2" -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 pip install -r requirements.txt
 pip uninstall -y numpy
