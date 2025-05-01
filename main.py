@@ -9,7 +9,6 @@ from contextlib import contextmanager
 
 from src.core.kws import KeywordSpotter
 from src.core.stt import SpeechToText
-from src.core.stream_microphone import AsrHandler
 from src.core.tts import TextToSpeech
 from src.core.llm import LocalLLMClient
 from src.core.recorder import Recorder
@@ -37,7 +36,6 @@ class VoiceAssistant:
                 joiner_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.onnx",
                 keywords_file="keywords/keywords.txt"
             )
-            self.asr_handler = AsrHandler(model_path="sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en")
             self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
 
             self.stt = SpeechToText(config.asr_model)
@@ -144,6 +142,7 @@ class VoiceAssistant:
             text = self._process_audio_to_text(audio)
             if not text:
                 text = "我听不懂你说什么"
+                return None
 
             stream = False
             if stream:
@@ -201,7 +200,7 @@ class VoiceAssistant:
             language = langid.classify(text)[0].strip().lower()        
             #if language not in ('zh', 'en'):
             if language != 'zh':
-                logging.warning(f"不支持的语言: {language}")
+                logging.warning(f"不支持的语言: {language}, text: {text}")
                 return None
 
             return text
@@ -292,7 +291,7 @@ class VoiceAssistant:
 def main():
     try:
         parser = argparse.ArgumentParser(description='Voice Assistant')
-        parser.add_argument('--asr-model', default='whisper')
+        parser.add_argument('--asr-model', default='sensevoice')
         parser.add_argument('--interactive', '-i', action='store_true')
         parser.add_argument('--file', '-f')
         parser.add_argument('--output-dir', default='.')
@@ -323,7 +322,7 @@ def main():
         if args.file:
             assistant.process_audio_file(args.file, args.output_dir)
         elif args.interactive:
-            logging.info("启动交互模式...")
+            logging.info("Interactive mode started...")
             try:
                 while True:
                     assistant.process_conversation()

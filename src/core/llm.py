@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 class LLMConfig:
     model_path: str = 'MiniMind2'
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    max_seq_len: int = 512
+    max_seq_len: int = 256
     max_new_tokens: int = 128
     temperature: float = 0.8
     repetition_penalty: float = 1.2
@@ -67,7 +67,6 @@ class LocalLLMClient:
             tokenize=False,
             add_generation_prompt=True
         )[-self.config.max_seq_len:]
-
 
     def generate_stream_response(self, prompt: str, messages):
         try:

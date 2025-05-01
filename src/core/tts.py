@@ -96,7 +96,6 @@ class TextToSpeech:
         if real_path is None:
             raise ValueError("model_dir must be specified")
         self.model_dir = real_path
-        #logging.info(f"初始化 TTS 模型: {self.model_dir}")
         if not os.path.isdir(self.model_dir):
             raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
 

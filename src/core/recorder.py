@@ -9,6 +9,8 @@ import sherpa_onnx
 
 from ..utils.utils import resource_path
 
+EXCLUDE_KEYWORDS = ["loopback", "mix", "stereo", "virtual", "monitor"]
+
 def resolve_input_device(device):
     devices = sd.query_devices()
 
@@ -33,6 +35,9 @@ def resolve_input_device(device):
     # 自动 fallback 到第一个有输入通道的设备
     for i, dev in enumerate(devices):
         if dev["max_input_channels"] > 0:
+            name = dev["name"].lower()
+            if any(k in name for k in EXCLUDE_KEYWORDS):
+                continue
             logging.info(f"[INFO] 自动选择输入设备: {dev['name']} (#{i})")
             return i, dev["name"]
 
@@ -80,7 +85,7 @@ class Recorder:
         recording_done = False
         start_time = None
 
-        logging.info("Listening for speech...")
+        logging.info("Microphone Listening for speech...")
 
         def callback(indata, frames, time_info, status):
             nonlocal recorded, silence_counter, speech_detected, start_time, recording_done
