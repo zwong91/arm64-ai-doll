@@ -42,6 +42,7 @@ def play_audio_callback(outdata: np.ndarray, frames: int, cbtime, status: sd.Cal
 
     if buffer.empty():
         outdata.fill(0)
+        State().resume_listening()  # 启用监听
         return
 
     n = 0
@@ -75,7 +76,6 @@ def play_audio():
     ):
         event.wait()
     logging.info("Exiting ...")
-    State().resume_listening()  # 启用监听
 
 
 def stop_playback():

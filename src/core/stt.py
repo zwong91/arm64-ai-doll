@@ -46,7 +46,7 @@ class SpeechToText:
         # 设置 num_threads 为 CPU 核心数
         num_threads = cpu_cores if cpu_cores else 1  # 如果获取失败，默认为 1
         self.model = sherpa_onnx.OfflineRecognizer.from_sense_voice(
-            model=resource_path(os.path.join(model_path, "model.onnx")),
+            model=resource_path(os.path.join(model_path, "model.int8.onnx")),
             tokens=resource_path(os.path.join(model_path, "tokens.txt")),
             num_threads=num_threads,
             language="auto",

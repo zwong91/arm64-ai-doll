@@ -129,7 +129,8 @@ class VoiceAssistant:
     def process_conversation(self) -> Optional[str]:
         try:
             audio = self.recorder.record(self.config.silence_duration)
-            if not self._validate_audio(audio):
+            if not self._validate_audio(audio) or not State.listening():
+                logging.info("未检测到语音或静音")
                 return None
 
             if self.is_awake_mode:
