@@ -3,7 +3,6 @@ import tempfile
 import os
 import time
 import numpy as np
-import soundfile as sf
 import logging
 from typing import Generator, Optional
 from contextlib import contextmanager
@@ -108,14 +107,14 @@ class VoiceAssistant:
             logging.info("A:")
             
             for reply in reply_gen:
-                print(reply, end="")
+                logging.info(reply, end="")
                 # 将文本片段加入TTS队列
                 self.tts_queue.put(reply)
                 yield reply
                 
             self.tts_queue.put("#END")
             yield "#refresh"
-            print()
+            logging.info()
             logging.info("==================")
             
             # 等待TTS完成当前句子
@@ -158,7 +157,7 @@ class VoiceAssistant:
                     # 只处理完整的句子，保留最后一段 incomplete 的
                     complete = sentences[:-1]
                     for sentence in complete:
-                        print(f"seg {seg_idx}: {sentence}\n")
+                        logging.info(f"seg {seg_idx}: {sentence}\n")
                         self._synthesize_response(sentence)
                         seg_idx += 1
 
@@ -167,7 +166,7 @@ class VoiceAssistant:
 
                 # 处理剩下的残余内容
                 if buffer.strip():
-                    print(f"seg {seg_idx}: {buffer}\n")
+                    logging.info(f"seg {seg_idx}: {buffer}\n")
                     self._synthesize_response(buffer)
 
             else:
@@ -175,7 +174,7 @@ class VoiceAssistant:
                 sentences = smart_split(response)
                 seg_idx = 1
                 for sentence in sentences:
-                    print(f"seg {seg_idx}: {sentence}\n")
+                    logging.info(f"seg {seg_idx}: {sentence}\n")
                     self._synthesize_response(sentence)
                     seg_idx += 1
             return response
@@ -238,7 +237,7 @@ class VoiceAssistant:
             with self._time_it("关键字唤醒"):           
                 result = self.kws.process_audio(audio)
                 if result:
-                    print(f"检测到关键词: {result}")
+                    logging.info(f"检测到关键词: {result}")
                     self.is_awake_mode = False  # 切换到语音识别模式
 
             with self._time_it("语音转录"):
@@ -256,7 +255,7 @@ class VoiceAssistant:
                     # 只处理完整的句子，保留最后一段 incomplete 的
                     complete = sentences[:-1]
                     for sentence in complete:
-                        print(f"seg {seg_idx}: {sentence}\n")
+                        logging.info(f"seg {seg_idx}: {sentence}\n")
                         self._synthesize_response(sentence)
                         seg_idx += 1
 
@@ -265,7 +264,7 @@ class VoiceAssistant:
 
                 # 处理剩下的残余内容
                 if buffer.strip():
-                    print(f"seg {seg_idx}: {buffer}\n")
+                    logging.info(f"seg {seg_idx}: {buffer}\n")
                     self._synthesize_response(buffer)
 
             else:
@@ -273,7 +272,7 @@ class VoiceAssistant:
                 sentences = smart_split(response)
                 seg_idx = 1
                 for sentence in sentences:
-                    print(f"seg {seg_idx}: {sentence}\n")
+                    logging.info(f"seg {seg_idx}: {sentence}\n")
                     self._synthesize_response(sentence)
                     seg_idx += 1
 

@@ -1,3 +1,4 @@
+import logging
 import sounddevice as sd
 import sherpa_onnx
 from pathlib import Path
@@ -44,8 +45,8 @@ class KeywordSpotter:
         num_threads = detect_num_threads()
         provider = detect_provider()
 
-        print(f"Number of threads: {num_threads}")
-        print(f"Provider: {provider}")
+        logging.info(f"Number of threads: {num_threads}")
+        logging.info(f"Provider: {provider}")
 
         # 初始化KWS配置
         self.keyword_spotter = sherpa_onnx.KeywordSpotter(

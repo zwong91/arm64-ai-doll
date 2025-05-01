@@ -1,4 +1,7 @@
+import logging
 import sounddevice as sd
+import soundfile as sf
+
 import numpy as np
 import time
 import noisereduce as nr
@@ -18,20 +21,19 @@ def resolve_input_device(device):
         if 0 <= device < len(devices) and devices[device]["max_input_channels"] > 0:
             return device, devices[device]["name"]
         else:
-            print(f"[WARN] 无效输入设备编号 {device}，尝试自动选择")
+            logging.info(f"[WARN] 无效输入设备编号 {device}，尝试自动选择")
 
     # 如果是设备名称字符串
     if isinstance(device, str):
         for i, dev in enumerate(devices):
             if device.lower() in dev["name"].lower() and dev["max_input_channels"] > 0:
-                print(f"使用输入设备: {device_name} (#{device_id})")
                 return i, dev["name"]
-        print(f"[WARN] 找不到名为 '{device}' 的输入设备，尝试自动选择")
+        logging.info(f"[WARN] 找不到名为 '{device}' 的输入设备，尝试自动选择")
 
     # 自动 fallback 到第一个有输入通道的设备
     for i, dev in enumerate(devices):
         if dev["max_input_channels"] > 0:
-            print(f"[INFO] 自动选择输入设备: {dev['name']} (#{i})")
+            logging.info(f"[INFO] 自动选择输入设备: {dev['name']} (#{i})")
             return i, dev["name"]
 
     raise RuntimeError("未找到可用的输入设备")
@@ -62,9 +64,9 @@ class Recorder:
     @staticmethod
     def list_devices():
         devices = sd.query_devices()
-        print("\n可用的音频设备:")
+        logging.info("\n可用的音频设备:")
         for i, dev in enumerate(devices):
-            print(f"{i}: {dev['name']} (输入通道: {dev['max_input_channels']}, 输出通道: {dev['max_output_channels']})")
+            logging.info(f"{i}: {dev['name']} (输入通道: {dev['max_input_channels']}, 输出通道: {dev['max_output_channels']})")
         return devices
 
     def record_until_silence(self, silence_duration=1.0, enable_noise_reduction=True):
@@ -78,19 +80,19 @@ class Recorder:
         recording_done = False
         start_time = None
 
-        print("Listening for speech...")
+        logging.info("Listening for speech...")
 
         def callback(indata, frames, time_info, status):
             nonlocal recorded, silence_counter, speech_detected, start_time, recording_done
             if status:
-                print(status)
+                logging.info(status)
 
             chunk = indata[:, 0]
             self.vad.accept_waveform(chunk)
 
             if not speech_detected:
                 if self.vad.is_speech_detected():
-                    print("Speech detected, start recording")
+                    logging.info("Speech detected, start recording")
                     speech_detected = True
                     start_time = time.time()
                     recorded.append(chunk.copy())
@@ -102,7 +104,7 @@ class Recorder:
                     silence_counter += 1
 
                 if silence_counter >= silence_chunks:
-                    print("Silence detected, stop recording")
+                    logging.info("Silence detected, stop recording")
                     recording_done = True
                     raise sd.CallbackStop()
 
@@ -120,7 +122,7 @@ class Recorder:
         # 获取 VAD 检测到的语音片段
         speech_samples = []
         while not self.vad.empty():
-            speech_samples.extend(vad.front.samples)
+            speech_samples.extend(self.vad.front.samples)
             self.vad.pop()
 
         speech_samples = np.array(speech_samples, dtype=np.float32)
@@ -132,5 +134,6 @@ class Recorder:
                 speech_samples = nr.reduce_noise(y=speech_samples, sr=self.sample_rate)
             filename_for_speech = time.strftime("%Y%m%d-%H%M%S-speech.wav")
             sf.write(filename_for_speech, speech_samples, samplerate=self.sample_rate)
+            logging.info(f"语音片段已保存: {filename_for_speech}")
 
         return speech_samples

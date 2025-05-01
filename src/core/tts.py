@@ -30,7 +30,7 @@ def generated_audio_callback(samples: np.ndarray, progress: float):
         first_message_time = time.time()
     buffer.put(samples)
     if not started:
-        print("Start playing ...")
+        logging.info("Start playing ...")
         started = True
     return 0 if killed else 1
 
@@ -39,9 +39,7 @@ def play_audio_callback(outdata: np.ndarray, frames: int, cbtime, status: sd.Cal
     if killed:
         event.set()
 
-    #当 buffer 空时，等几毫秒再播，降低 underrun 几率
     if buffer.empty():
-        time.sleep(0.01)  # 等待 10ms
         outdata.fill(0)
         return
 
@@ -71,10 +69,11 @@ def play_audio():
         callback=play_audio_callback,
         dtype="float32",
         samplerate=sample_rate,
-        blocksize=1024,
+        blocksize=4096,
+        latency='high',  # 或 0.1
     ):
         event.wait()
-    print("Exiting ...")
+    logging.info("Exiting ...")
 
 
 def stop_playback():
@@ -97,7 +96,7 @@ class TextToSpeech:
         if real_path is None:
             raise ValueError("model_dir must be specified")
         self.model_dir = real_path
-        logging.info(f"初始化 TTS 模型: {self.model_dir}")
+        #logging.info(f"初始化 TTS 模型: {self.model_dir}")
         if not os.path.isdir(self.model_dir):
             raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
 
@@ -204,7 +203,11 @@ class TextToSpeech:
             audio = tts.generate(text, sid=sid, speed=self.speed,
                                  callback=generated_audio_callback,)
             end = time.time()
-            # 等缓冲区有数据后再播放
+            # 等缓冲区有数据后再播放，防 underrun
+            wait_start = time.time()
+            while buffer.qsize() < 3 and (time.time() - wait_start) < 2.0:
+                time.sleep(0.05)
+
             with play_thread_lock:
                 if not play_thread_started:
                     threading.Thread(target=play_audio, daemon=True).start()
@@ -213,7 +216,7 @@ class TextToSpeech:
             stopped = True
 
             if len(audio.samples) == 0:
-                print("生成失败，无音频")
+                logging.info("生成失败，无音频")
                 return
 
             elapsed_seconds = end - start
@@ -227,11 +230,11 @@ class TextToSpeech:
                 subtype="PCM_16",
             )
 
-            print(f"Audio duration: {audio_duration:.3f}s")
-            print(f"RTF: {elapsed_seconds:.3f}/{audio_duration:.3f} = {real_time_factor:.3f}")
+            logging.info(f"Audio duration: {audio_duration:.3f}s")
+            logging.info(f"RTF: {elapsed_seconds:.3f}/{audio_duration:.3f} = {real_time_factor:.3f}")
 
         except Exception as e:
-            print(f"[ERROR] 合成失败: {e}")
+            logging.info(f"[ERROR] 合成失败: {e}")
             raise
 
 

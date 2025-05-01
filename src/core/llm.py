@@ -17,8 +17,8 @@ class LLMConfig:
     model_path: str = 'MiniMind2'
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     max_seq_len: int = 512
-    max_new_tokens: int = 256
-    temperature: float = 0.7
+    max_new_tokens: int = 128
+    temperature: float = 0.8
     repetition_penalty: float = 1.2
     top_p: float = 0.85
     
