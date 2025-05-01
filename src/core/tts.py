@@ -11,7 +11,7 @@ import soundfile as sf
 import sounddevice as sd
 
 from ..utils.utils import resource_path
-
+from .share_state import State
 
 buffer = queue.Queue()
 started = False
@@ -32,6 +32,7 @@ def generated_audio_callback(samples: np.ndarray, progress: float):
     if not started:
         logging.info("Start playing ...")
         started = True
+        State.pause_listening() # 禁用监听
     return 0 if killed else 1
 
 
@@ -74,11 +75,13 @@ def play_audio():
     ):
         event.wait()
     logging.info("Exiting ...")
+    State().resume_listening()  # 启用监听
 
 
 def stop_playback():
     global killed
     killed = True
+    State().resume_listening()
     event.set()
 
 

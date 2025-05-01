@@ -98,9 +98,7 @@ class Recorder:
                 logging.info(status)
 
             chunk = indata[:, 0]
-            # 语言中断
-            if not self.paused:
-                self.vad.accept_waveform(chunk)
+            self.vad.accept_waveform(chunk)
 
             if not speech_detected:
                 if self.vad.is_speech_detected():
@@ -149,10 +147,4 @@ class Recorder:
             logging.info(f"语音片段已保存: {filename_for_speech}")
 
         return speech_samples
-    
 
-    def pause_listening(self):
-        self.paused = True
-
-    def resume_listening(self):
-        self.paused = False

@@ -9,11 +9,14 @@ from contextlib import contextmanager
 
 from src.core.kws import KeywordSpotter
 from src.core.stt import SpeechToText
-from src.core.tts import TextToSpeech
+from src.core.tts import TextToSpeech, stop_playback
 from src.core.llm import LocalLLMClient
 from src.core.recorder import Recorder
 from src.core.speech_denoiser import SpeechEnhancer
+from src.core.share_state import State
+
 from src.config.config import Config
+
 import langid
 
 import soundfile as sf
