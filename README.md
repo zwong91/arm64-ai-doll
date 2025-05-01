@@ -139,7 +139,7 @@ wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz
 tar -xzf Python-3.10.13.tgz
 cd Python-3.10.13
 
-./configure --enable-optimizations
+./configure --enable-optimizations --enable-shared
 make -j8
 make install
 
@@ -168,8 +168,8 @@ python --version
 ### 5. 创建并激活虚拟环境
 
 ```bash
-python3.10 -m venv /opt/doll
-source /opt/doll/bin/activate
+python3.10 -m venv /opt/arm64_venv
+source /opt/arm64_venv/bin/activate
 ```
 
 ---
