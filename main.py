@@ -300,7 +300,6 @@ def main():
         parser.add_argument('--asr-model', default='sensevoice')
         parser.add_argument('--interactive', '-i', action='store_true')
         parser.add_argument('--file', '-f')
-        parser.add_argument('--output-dir', default='.')
         parser.add_argument('--list-devices', '-l', action='store_true')
         parser.add_argument('--input-device', default='default')
         parser.add_argument('--output-device', default='default')
@@ -334,7 +333,7 @@ def main():
                     assistant.process_conversation()
                     ##asyncio.run(assistant.process())
             except KeyboardInterrupt:
-                logging.info("用户终止程序")
+                logging.info("Exiting interactive mode...")
         else:
             logging.error("请指定 --file 或 --interactive 模式")
 
