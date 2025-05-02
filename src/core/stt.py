@@ -39,7 +39,7 @@ class SpeechToText:
         self.model = WhisperModel(model_path, device=self.device, compute_type=compute_type)
 
     def _init_sensevoice(self, kwargs):
-        model_path = resource_path(kwargs.get("model_path", "sensevoice_ckpt"))
+        model_path = resource_path(kwargs.get("model_path", "sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17"))
         #self.model = AutoModel(model=model_path, trust_remote_code=True, device=self.device, disable_update=True)
         # 获取系统的 CPU 核心数
         cpu_cores = os.cpu_count()

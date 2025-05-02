@@ -259,7 +259,7 @@ pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
-  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
+  --add-data "sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
@@ -295,7 +295,7 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 ```bash
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
-  --add-data "sensevoice_ckpt:sensevoice_ckpt" \
+  --add-data "sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
