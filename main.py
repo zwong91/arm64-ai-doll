@@ -41,7 +41,7 @@ class VoiceAssistant:
                 joiner_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.onnx",
                 keywords_file="keywords/keywords.txt"
             )
-            self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
+            #self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
 
             self.stt = SpeechToText(config.asr_model)
             self.tts = TextToSpeech(config.tts_model)
@@ -80,51 +80,51 @@ class VoiceAssistant:
             except OSError:
                 pass
 
-    async def _synthesize_worker(self):
-        """异步语音合成worker"""
-        while True:
-            if not self.tts_queue.empty():
-                text = self.tts_queue.get()
-                if text == "#END":
-                    break
+    # async def _synthesize_worker(self):
+    #     """异步语音合成worker"""
+    #     while True:
+    #         if not self.tts_queue.empty():
+    #             text = self.tts_queue.get()
+    #             if text == "#END":
+    #                 break
                     
-                with self._temp_audio_file() as temp_output:
-                    # 在线程池中执行同步TTS
-                    await asyncio.get_event_loop().run_in_executor(
-                        self.executor, 
-                        self.tts.synthesize,
-                        text, 
-                        temp_output
-                    )
-            await asyncio.sleep(0.1)
+    #             with self._temp_audio_file() as temp_output:
+    #                 # 在线程池中执行同步TTS
+    #                 await asyncio.get_event_loop().run_in_executor(
+    #                     self.executor, 
+    #                     self.tts.synthesize,
+    #                     text, 
+    #                     temp_output
+    #                 )
+    #         await asyncio.sleep(0.1)
 
-    async def process(self):
-        """异步处理对话"""
-        # 启动TTS worker
-        tts_task = asyncio.create_task(self._synthesize_worker())
+    # async def process(self):
+    #     """异步处理对话"""
+    #     # 启动TTS worker
+    #     tts_task = asyncio.create_task(self._synthesize_worker())
         
-        gen = self.asr_handler.handle()
-        for sentence in gen:
-            logging.info(f"Q:\n{sentence}")
-            reply_gen = self.llm.stream_chat(sentence)
-            logging.info("A:")
+    #     gen = self.asr_handler.handle()
+    #     for sentence in gen:
+    #         logging.info(f"Q:\n{sentence}")
+    #         reply_gen = self.llm.stream_chat(sentence)
+    #         logging.info("A:")
             
-            for reply in reply_gen:
-                logging.info(reply, end="")
-                # 将文本片段加入TTS队列
-                self.tts_queue.put(reply)
-                yield reply
+    #         for reply in reply_gen:
+    #             logging.info(reply, end="")
+    #             # 将文本片段加入TTS队列
+    #             self.tts_queue.put(reply)
+    #             yield reply
                 
-            self.tts_queue.put("#END")
-            yield "#refresh"
-            logging.info()
-            logging.info("==================")
+    #         self.tts_queue.put("#END")
+    #         yield "#refresh"
+    #         logging.info()
+    #         logging.info("==================")
             
-            # 等待TTS完成当前句子
-            await tts_task
+    #         # 等待TTS完成当前句子
+    #         await tts_task
             
-        # 清理
-        self.executor.shutdown()
+    #     # 清理
+    #     self.executor.shutdown()
 
     def process_conversation(self) -> Optional[str]:
         try:

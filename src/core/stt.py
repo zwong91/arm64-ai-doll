@@ -15,7 +15,7 @@ def remove_tags(text: str) -> str:
     return re.sub(r"<\|.*?\|>", "", text)
 
 class SpeechToText:
-    def __init__(self, backend="whisper", **kwargs):
+    def __init__(self, backend="sensevoice", **kwargs):
         """
         backend: 选择后端，"whisper" 或 "sensevoice"
         kwargs: 根据 backend 传不同的初始化参数

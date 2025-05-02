@@ -160,8 +160,8 @@ class TextToSpeech:
             data_dir = model_files.get("data_dir", '')
 
             provider = detect_provider()
-            # https://k2-fsa.github.io/sherpa/onnx/tts/pretrained_models/kokoro.html
-            sid = 0
+            # https://k2-fsa.github.io/sherpa/onnx/tts/pretrained_models/vits.html#vits-model-aishell3
+            sid = 21
             num_threads = os.cpu_count()
             rule_fsts = ",".join(model_files["rule_fsts"]) if model_files["rule_fsts"] else ""
 

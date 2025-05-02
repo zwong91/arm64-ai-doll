@@ -259,12 +259,9 @@ pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
-  --add-data "sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en:sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
-  --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
-  --add-data "speech-enhancement:speech-enhancement" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --add-data "keywords:keywords" \
@@ -298,12 +295,9 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 ```bash
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
-  --add-data "sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en:sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en" \
   --add-data "sensevoice_ckpt:sensevoice_ckpt" \
-  --add-data "whisper_ckpt:whisper_ckpt" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
-  --add-data "speech-enhancement:speech-enhancement" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
   --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
   --add-data "keywords:keywords" \
