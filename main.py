@@ -232,7 +232,7 @@ class VoiceAssistant:
             duration = time.time() - start
             logging.info(f"{task_name}耗时: {duration:.2f}秒")
 
-    def process_audio_file(self, wave_filename, output_dir="."):
+    def process_audio_file(self, wave_filename):
         try:
             all_start = time.time()
 
@@ -281,13 +281,6 @@ class VoiceAssistant:
                     self._synthesize_response(sentence)
                     seg_idx += 1
 
-
-            # os.makedirs(output_dir, exist_ok=True)
-            # output_file = os.path.join(output_dir, f"{time.strftime('%Y%m%d-%H%M%S')}-speech.wav")
-            # with self._time_it("语音合成"):
-            #     self.tts.synthesize(response, output_file)
-
-            # logging.info(f"saved to: {output_file}")
             logging.info(f"总耗时: {time.time() - all_start:.2f}秒")
             # Sleep
             time.sleep(10)
@@ -325,7 +318,7 @@ def main():
                 f.write(str(os.getpid()))
 
         if args.file:
-            assistant.process_audio_file(args.file, args.output_dir)
+            assistant.process_audio_file(args.file)
         elif args.interactive:
             logging.info("Interactive mode started...")
             try:
