@@ -11,3 +11,6 @@
 /sherpa/sherpa-onnx-streaming-paraformer-bilingual-zh-en
 /sherpa/vits-icefall-zh-aishell3
 *pyc
+/build
+/dist
+/arm64*
