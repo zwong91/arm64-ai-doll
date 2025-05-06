@@ -41,7 +41,7 @@ class SpeechToText:
             model=resource_path(os.path.join(model_path, "model.int8.onnx")),
             tokens=resource_path(os.path.join(model_path, "tokens.txt")),
             num_threads=num_threads,
-            language="auto",
+            #language="auto",
             use_itn=True,
             debug=False,
             hr_lexicon=resource_path(os.path.join(model_path, "lexicon.txt")),
@@ -100,4 +100,6 @@ class SpeechToText:
                     #yield result
                     results.append(result)
                 self.recognizer.reset(stream)
-            return " ".join(results)       
+            return " ".join(results)
+        else:
+            raise ValueError(f"Unknown transcribe: {self.backend}")  

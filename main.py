@@ -111,7 +111,7 @@ class VoiceAssistant:
                         self._synthesize_response("我在,我在。")
                         return None
                     else:
-                        logging.info("未检测到关键词")
+                        logging.info(f"未检测到关键词: raw text: {text}")
                         return None
 
             stream = False

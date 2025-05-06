@@ -129,22 +129,17 @@ class Recorder:
             while not recording_done:
                 time.sleep(0.05)
 
-        # 获取 VAD 检测到的语音片段
-        speech_samples = []
-        while not self.vad.empty():
-            speech_samples.extend(self.vad.front.samples)
-            self.vad.pop()
 
-        speech_samples = np.array(speech_samples, dtype=np.float32)
-        # 对语音片段进行归一化和降噪
-        if len(speech_samples) > 0:
-            speech_samples = speech_samples / np.max(np.abs(speech_samples))  # 归一化
-
+        if recorded:
+            all_audio = np.concatenate(recorded)
+            all_audio = all_audio / np.max(np.abs(all_audio))  # 归一化
             if enable_noise_reduction:
-                speech_samples = nr.reduce_noise(y=speech_samples, sr=self.sample_rate)
+                all_audio = nr.reduce_noise(y=all_audio, sr=self.sample_rate)
             filename_for_speech = time.strftime("%Y%m%d-%H%M%S-speech.wav")
-            sf.write(filename_for_speech, speech_samples, samplerate=self.sample_rate)
+            sf.write(filename_for_speech, all_audio, samplerate=self.sample_rate)
             logging.info(f"语音片段已保存: {filename_for_speech}")
+        else:
+            all_audio = np.zeros(0)
 
-        return speech_samples
+        return all_audio
 
