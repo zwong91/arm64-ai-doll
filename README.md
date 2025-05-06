@@ -263,8 +263,6 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
-  --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
-  --add-data "keywords:keywords" \
   main.py
 
 
@@ -298,8 +296,6 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
   --add-data "MiniMind2-Small:MiniMind2-Small" \
-  --add-data "model/minimind_tokenizer:model/minimind_tokenizer" \
-  --add-data "keywords:keywords" \
   main.py
 
 ```

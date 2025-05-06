@@ -18,9 +18,9 @@ class LLMConfig:
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     max_seq_len: int = 128
     max_new_tokens: int = 64
-    temperature: float = 0.8
+    temperature: float = 0.7
     repetition_penalty: float = 1.2
-    top_p: float = 0.85
+    top_p: float = 0.92
     
 # -*- coding: utf-8 -*-
 DEFAULT_SYSTEM_PROMPT = (
@@ -56,6 +56,7 @@ class LocalLLMClient:
             resource_path(self.config.model_path), 
             trust_remote_code=True
         ).eval().to(self.config.device)
+        print(f'Model Parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.2f}M(illion)')
         return model, tokenizer
 
     def _prepare_input(self, prompt: str, messages: Optional[List[Dict]] = None) -> str:
@@ -83,7 +84,7 @@ class LocalLLMClient:
                     max_new_tokens=self.config.max_new_tokens,
                     do_sample=True,
                     temperature=self.config.temperature,
-                    repetition_penalty=1.2,
+                    repetition_penalty=self.config.repetition_penalty,
                     top_p=self.config.top_p,
                     attention_mask=inputs.attention_mask,
                     pad_token_id=self.tokenizer.pad_token_id,
@@ -134,7 +135,7 @@ class LocalLLMClient:
                     streamer=streamer,
                     top_p=self.config.top_p,
                     temperature=self.config.temperature,
-                    repetition_penalty=1.2,
+                    repetition_penalty=self.config.repetition_penalty,
                 )
                 
                 #截去 prompt 部分

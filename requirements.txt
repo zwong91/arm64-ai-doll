@@ -19,5 +19,5 @@ ujson==5.1.0
 numpy<2
 sherpa-onnx
 tensorboard
-torch==2.2.0
-torchaudio==2.2.0
+torch==2.3.0
+torchaudio==2.3.0
