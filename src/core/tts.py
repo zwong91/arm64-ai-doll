@@ -219,7 +219,7 @@ class TextToSpeech:
             end = time.time()
             # 等缓冲区有数据后再播放，防 underrun
             wait_start = time.time()
-            while buffer.qsize() < 3 and (time.time() - wait_start) < 1.0:
+            while buffer.qsize() < 3 and (time.time() - wait_start) < 5.0:
                 time.sleep(0.05)
 
             with play_thread_lock:
