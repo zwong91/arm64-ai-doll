@@ -12,6 +12,7 @@ import sounddevice as sd
 
 from ..utils.utils import resource_path
 from .share_state import State
+import re
 
 buffer = queue.Queue()
 started = False
@@ -124,6 +125,7 @@ class TextToSpeech:
         try:
             model_files = {
                 "model": None,
+                "vocoder": None,
                 "lexicon": None,
                 "tokens": None,
                 "dict_dir": None,
@@ -133,8 +135,10 @@ class TextToSpeech:
             lexicons = []
             for file in os.listdir(self.model_dir):
                 file_path = os.path.join(self.model_dir, file)
-                if file.endswith(".onnx"):
+                if re.match(r"model.*\.onnx$", file):
                     model_files["model"] = file_path
+                elif re.match(r"vocos.*\.onnx$", file):
+                    model_files["vocoder"] = file_path
                 elif file == "voices.bin":
                     model_files["kokoro_voices"] = file_path
                 elif file == "lexicon.txt" or file == "lexicon-us-en.txt" or file == "lexicon-zh.txt":
@@ -174,16 +178,24 @@ class TextToSpeech:
                         tokens=model_files["tokens"],
                         length_scale=self.speed,  # 设置语速
                     ),
-                    kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
-                        model=model_files["model"],
-                        voices=kokoro_voices,
-                        tokens=model_files["tokens"],
-                        lexicon=model_files["lexicon"],
-                        data_dir=data_dir,
-                        dict_dir=model_files["dict_dir"] or '',
-                        length_scale=self.speed,
-                    ),
-                    provider=provider,
+                    # matcha=sherpa_onnx.OfflineTtsMatchaModelConfig(
+                    #     acoustic_model=model_files["model"],
+                    #     vocoder=model_files["vocoder"],
+                    #     lexicon=model_files["lexicon"],
+                    #     tokens=model_files["tokens"],
+                    #     data_dir=data_dir,
+                    #     dict_dir=model_files["dict_dir"] or '',
+                    # ),
+                    # kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
+                    #     model=model_files["model"],
+                    #     voices=kokoro_voices,
+                    #     tokens=model_files["tokens"],
+                    #     lexicon=model_files["lexicon"],
+                    #     data_dir=data_dir,
+                    #     dict_dir=model_files["dict_dir"] or '',
+                    #     length_scale=self.speed,
+                    # ),
+                    provider="cpu",
                     debug=False,
                     num_threads=num_threads,
                 ),

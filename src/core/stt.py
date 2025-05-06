@@ -65,17 +65,11 @@ class SpeechToText:
         )
 
     def transcribe(self, sample_rate, audio):
-        if self.backend == "whisper":
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as f:
-                sf.write(f.name, audio, sample_rate)
-                segments, _ = self.model.transcribe(f.name)
-            return " ".join([s.text for s in segments])
-
-        elif self.backend == "sensevoice":
+        if self.backend == "sensevoice":
             stream = self.model.create_stream()
             stream.accept_waveform(sample_rate, audio)
             self.model.decode_stream(stream)
-            return stream.result.text.strip()
+            return stream.result.text
 
         elif self.backend == "paraformer":
             # 实时语音识别
