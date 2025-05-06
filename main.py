@@ -102,17 +102,17 @@ class VoiceAssistant:
                 text = "我听不懂你说什么"
                 return None
 
-            if self.is_awake_mode:
-                with self._time_it("关键字唤醒"):           
-                    result = self.kws(text)
-                    if result:
-                        logging.info(f"检测到关键词: {result}")
-                        self.is_awake_mode = False  # 切换到语音识别模式
-                        self._synthesize_response("我在,我在。")
-                        return None
-                    else:
-                        logging.info(f"未检测到关键词: raw text: {text}")
-                        return None
+            # if self.is_awake_mode:
+            #     with self._time_it("关键字唤醒"):           
+            #         result = self.kws(text)
+            #         if result:
+            #             logging.info(f"检测到关键词: {result}")
+            #             self.is_awake_mode = False  # 切换到语音识别模式
+            #             self._synthesize_response("我在,我在。")
+            #             return None
+            #         else:
+            #             logging.info(f"未检测到关键词: raw text: {text}")
+            #             return None
 
             stream = False
             if stream:
