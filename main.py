@@ -183,8 +183,7 @@ class VoiceAssistant:
 
     def _synthesize_response(self, response: str) -> None:
         with self._time_it("语音合成"):
-            with self._temp_audio_file() as temp_file:
-                self.tts.synthesize(response, temp_file)
+                self.tts.synthesize(response)
 
     @contextmanager
     def _time_it(self, task_name: str):
