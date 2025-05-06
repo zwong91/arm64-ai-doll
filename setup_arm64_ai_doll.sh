@@ -105,7 +105,6 @@ cd -
 
 echo "📦 Step 15: 开始 PyInstaller 打包"
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
-  --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
   --add-data "sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \

@@ -258,7 +258,6 @@ kill $(cat /path/to/pidfile.txt)
 pip install pyinstaller
 
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
-  --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
   --add-data "sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
@@ -294,7 +293,6 @@ pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
 然后，使用以下命令将你的 `main.py` 文件打包成一个可执行文件：
 ```bash
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
-  --add-data "sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01:sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01" \
   --add-data "sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" \
   --add-data "vad_ckpt:vad_ckpt" \
   --add-data "sherpa/vits-icefall-zh-aishell3:sherpa/vits-icefall-zh-aishell3" \
