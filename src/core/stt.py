@@ -44,6 +44,9 @@ class SpeechToText:
             language="auto",
             use_itn=True,
             debug=False,
+            hr_lexicon=resource_path(os.path.join(model_path, "lexicon.txt")),
+            hr_dict_dir=resource_path(os.path.join(model_path, "dict")),
+            hr_rule_fsts=resource_path(os.path.join(model_path, "replace.fst")),
         )
 
     def _init_paraformer(self, kwargs):
