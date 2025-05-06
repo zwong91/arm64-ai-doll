@@ -168,6 +168,7 @@ python --version
 ### 5. 创建并激活虚拟环境
 
 ```bash
+# apt-get install python3.11-dev
 python3.11 -m venv /opt/arm64_venv
 source /opt/arm64_venv/bin/activate
 ```
