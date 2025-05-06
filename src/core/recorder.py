@@ -9,6 +9,8 @@ import sherpa_onnx
 
 from ..utils.utils import resource_path
 
+from collections import deque
+
 EXCLUDE_KEYWORDS = ["loopback", "mix", "stereo", "virtual", "monitor"]
 
 def resolve_input_device(device):
@@ -79,10 +81,12 @@ class Recorder:
             print(f"{i}: {dev['name']} (输入通道: {dev['max_input_channels']}, 输出通道: {dev['max_output_channels']})")
         return devices
 
-    def record(self, silence_duration=1.2, enable_noise_reduction=True):
+    def record(self, silence_duration=1.2, pre_speech_padding=0.5, enable_noise_reduction=True):
         chunk_duration = 0.1  # 秒
         chunk_size = int(self.sample_rate * chunk_duration)
         silence_chunks = int(silence_duration / chunk_duration)
+
+        pre_speech_chunks = int(pre_speech_padding / chunk_duration)
 
         recorded = []
         silence_counter = 0
@@ -90,6 +94,9 @@ class Recorder:
         recording_done = False
         start_time = None
 
+        # 用于存储最近的若干个音频块，作为前置缓冲
+        pre_buffer = deque(maxlen=pre_speech_chunks)
+        
         logging.info("Microphone Listening for speech...")
 
         def callback(indata, frames, time_info, status):
@@ -99,12 +106,13 @@ class Recorder:
 
             chunk = indata[:, 0]
             self.vad.accept_waveform(chunk)
-
+            pre_buffer.append(chunk.copy())  # 无论是否检测到语音，都放入预缓存
             if not speech_detected:
                 if self.vad.is_speech_detected():
                     logging.info("Speech detected, start recording")
                     speech_detected = True
                     start_time = time.time()
+                    recorded.extend(pre_buffer)  # 把前面的缓冲加入录音
                     recorded.append(chunk.copy())
             else:
                 recorded.append(chunk.copy())
