@@ -161,7 +161,7 @@ class TextToSpeech:
 
             provider = detect_provider()
             # https://k2-fsa.github.io/sherpa/onnx/tts/pretrained_models/vits.html#vits-model-aishell3
-            sid = 21
+            sid = 0
             num_threads = os.cpu_count()
             rule_fsts = ",".join(model_files["rule_fsts"]) if model_files["rule_fsts"] else ""
 
@@ -207,7 +207,7 @@ class TextToSpeech:
             end = time.time()
             # 等缓冲区有数据后再播放，防 underrun
             wait_start = time.time()
-            while buffer.qsize() < 3 and (time.time() - wait_start) < 2.0:
+            while buffer.qsize() < 3 and (time.time() - wait_start) < 1.0:
                 time.sleep(0.05)
 
             with play_thread_lock:

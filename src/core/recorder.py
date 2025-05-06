@@ -74,12 +74,12 @@ class Recorder:
     @staticmethod
     def list_devices():
         devices = sd.query_devices()
-        logging.info("\n可用的音频设备:")
+        print("\n可用的音频设备:")
         for i, dev in enumerate(devices):
-            logging.info(f"{i}: {dev['name']} (输入通道: {dev['max_input_channels']}, 输出通道: {dev['max_output_channels']})")
+            print(f"{i}: {dev['name']} (输入通道: {dev['max_input_channels']}, 输出通道: {dev['max_output_channels']})")
         return devices
 
-    def record(self, silence_duration=1.0, enable_noise_reduction=True):
+    def record(self, silence_duration=0.8, enable_noise_reduction=True):
         chunk_duration = 0.1  # 秒
         chunk_size = int(self.sample_rate * chunk_duration)
         silence_chunks = int(silence_duration / chunk_duration)
@@ -142,9 +142,9 @@ class Recorder:
 
             if enable_noise_reduction:
                 speech_samples = nr.reduce_noise(y=speech_samples, sr=self.sample_rate)
-            filename_for_speech = time.strftime("%Y%m%d-%H%M%S-speech.wav")
-            sf.write(filename_for_speech, speech_samples, samplerate=self.sample_rate)
-            logging.info(f"语音片段已保存: {filename_for_speech}")
+            # filename_for_speech = time.strftime("%Y%m%d-%H%M%S-speech.wav")
+            # sf.write(filename_for_speech, speech_samples, samplerate=self.sample_rate)
+            # logging.info(f"语音片段已保存: {filename_for_speech}")
 
         return speech_samples
 

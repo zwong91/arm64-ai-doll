@@ -25,6 +25,8 @@ import asyncio
 from queue import Queue
 
 from src.utils.utils import smart_split
+from src.config.wake_keywords import keywords
+import re
 
 class VoiceAssistant:
     def __init__(self, config: Config):
@@ -34,13 +36,13 @@ class VoiceAssistant:
         self.tts_queue = Queue()
         
         try:
-            self.kws = KeywordSpotter(
-                tokens_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/tokens.txt",
-                encoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.onnx",
-                decoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.onnx",
-                joiner_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.onnx",
-                keywords_file="keywords/keywords.txt"
-            )
+            # self.kws = KeywordSpotter(
+            #     tokens_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/tokens.txt",
+            #     encoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.onnx",
+            #     decoder_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.onnx",
+            #     joiner_path="sherpa/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.onnx",
+            #     keywords_file="keywords/keywords.txt"
+            # )
             #self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
 
             self.stt = SpeechToText(config.asr_model)
@@ -52,6 +54,7 @@ class VoiceAssistant:
                 vad_model_path=config.vad_model
             )
             self.is_awake_mode = True  # 初始唤醒模式
+            self.keywords = keywords
         except Exception as e:
             logging.error(f"初始化组件失败: {str(e)}")
             raise
@@ -80,51 +83,12 @@ class VoiceAssistant:
             except OSError:
                 pass
 
-    # async def _synthesize_worker(self):
-    #     """异步语音合成worker"""
-    #     while True:
-    #         if not self.tts_queue.empty():
-    #             text = self.tts_queue.get()
-    #             if text == "#END":
-    #                 break
-                    
-    #             with self._temp_audio_file() as temp_output:
-    #                 # 在线程池中执行同步TTS
-    #                 await asyncio.get_event_loop().run_in_executor(
-    #                     self.executor, 
-    #                     self.tts.synthesize,
-    #                     text, 
-    #                     temp_output
-    #                 )
-    #         await asyncio.sleep(0.1)
-
-    # async def process(self):
-    #     """异步处理对话"""
-    #     # 启动TTS worker
-    #     tts_task = asyncio.create_task(self._synthesize_worker())
-        
-    #     gen = self.asr_handler.handle()
-    #     for sentence in gen:
-    #         logging.info(f"Q:\n{sentence}")
-    #         reply_gen = self.llm.stream_chat(sentence)
-    #         logging.info("A:")
-            
-    #         for reply in reply_gen:
-    #             logging.info(reply, end="")
-    #             # 将文本片段加入TTS队列
-    #             self.tts_queue.put(reply)
-    #             yield reply
-                
-    #         self.tts_queue.put("#END")
-    #         yield "#refresh"
-    #         logging.info()
-    #         logging.info("==================")
-            
-    #         # 等待TTS完成当前句子
-    #         await tts_task
-            
-    #     # 清理
-    #     self.executor.shutdown()
+    def kws(self, text):
+        for kw in self.keywords:
+            pattern = rf"\b{re.escape(kw)}\b"
+            if re.search(pattern, text, re.IGNORECASE):
+                return kw
+        return None
 
     def process_conversation(self) -> Optional[str]:
         try:
@@ -133,9 +97,14 @@ class VoiceAssistant:
                 logging.info("未检测到语音或静音")
                 return None
 
+            text = self._process_audio_to_text(audio)
+            if not text:
+                text = "我听不懂你说什么"
+                return None
+
             if self.is_awake_mode:
                 with self._time_it("关键字唤醒"):           
-                    result = self.kws.process_audio(audio)
+                    result = self.kws(text)
                     if result:
                         logging.info(f"检测到关键词: {result}")
                         self.is_awake_mode = False  # 切换到语音识别模式
@@ -145,12 +114,7 @@ class VoiceAssistant:
                         logging.info("未检测到关键词")
                         return None
 
-            text = self._process_audio_to_text(audio)
-            if not text:
-                text = "我听不懂你说什么"
-                return None
-
-            stream = False
+            stream = True
             if stream:
                 buffer = ""
                 seg_idx = 1  # 句子序号从 1 开始
@@ -239,14 +203,13 @@ class VoiceAssistant:
             audio, sample_rate = sf.read(wave_filename, dtype="float32", always_2d=True)
             audio = audio[:, 0]  # only use the first channel
             audio = np.ascontiguousarray(audio)
-            with self._time_it("关键字唤醒"):           
-                result = self.kws.process_audio(audio)
+
+            with self._time_it("语音转录"):
+                text = self.stt.transcribe(sample_rate, audio)  
+                result = self.kws(text)
                 if result:
                     logging.info(f"检测到关键词: {result}")
                     self.is_awake_mode = False  # 切换到语音识别模式
-
-            with self._time_it("语音转录"):
-                text = self.stt.transcribe(sample_rate, audio)
 
             stream = True
             if stream:
