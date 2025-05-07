@@ -145,7 +145,7 @@ class VoiceAssistant:
                     logging.info(f"seg {seg_idx}: {sentence}\n")
                     self._synthesize_response(sentence)
                     seg_idx += 1
-            return response
+            return None
 
         except Exception as e:
             logging.error(f"处理对话时出错: {str(e)}")
