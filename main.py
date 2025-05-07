@@ -182,7 +182,7 @@ class VoiceAssistant:
             return self.llm.get_response(text, None, stream=stream)
 
     def _synthesize_response(self, response: str) -> None:
-        with self._time_it("语音合成"):
+        with self._time_it("语音合成播放"):
                 self.tts.synthesize(response)
 
     @contextmanager
