@@ -245,8 +245,6 @@ class VoiceAssistant:
                     seg_idx += 1
 
             logging.info(f"总耗时: {time.time() - all_start:.2f}秒")
-            # Sleep
-            time.sleep(10)
         except Exception as e:
             logging.error(f"处理音频文件时出错: {str(e)}")
 

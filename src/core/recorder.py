@@ -43,7 +43,7 @@ def resolve_input_device(device):
             logging.info(f"[INFO] 自动选择输入设备: {dev['name']} (#{i})")
             return i, dev["name"]
 
-    return None, None
+    raise RuntimeError("未找到可用的输入设备")
 
 class Recorder:
     def __init__(self, sample_rate=16000, input_device=None, vad_model_path="vad_ckpt/silero_vad.onnx"):
