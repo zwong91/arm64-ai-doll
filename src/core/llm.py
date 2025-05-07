@@ -94,12 +94,17 @@ class LocalLLMClient:
 
             Thread(target=_generate).start()
 
+            counter = 0
             while True:
                 text = queue.get()
                 if text is None:
                     #"finish_reason": "stop"
                     break
                 yield text
+
+                counter += 1
+                if counter >= 64:
+                    break      
 
         except Exception as e:
             yield f"[ERROR] {str(e)}"

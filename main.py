@@ -114,16 +114,15 @@ class VoiceAssistant:
                 return None
 
             if self.is_awake_mode:
-                with self._time_it("关键字唤醒"):           
-                    result = self.kws(text)
-                    if result:
-                        logging.info(f"检测到关键词: {result}")
-                        self.is_awake_mode = False  # 切换到语音识别模式
-                        self._synthesize_response("我在,我在。")
-                        return None
-                    else:
-                        logging.info(f"未检测到关键词: raw text: {text}")
-                        return None
+                result = self._check_kws(text)
+                if result:
+                    logging.info(f"检测到关键词: {result}")
+                    self.is_awake_mode = False  # 切换到语音识别模式
+                    self._synthesize_response("我在,我在。")
+                    return None
+                else:
+                    logging.info(f"未检测到关键词: raw text: {text}")
+                    return None
 
             stream = True
             if stream:
@@ -157,6 +156,7 @@ class VoiceAssistant:
                     logging.info(f"seg {seg_idx}: {sentence}\n")
                     self._synthesize_response(sentence)
                     seg_idx += 1
+
             return None
 
         except Exception as e:
@@ -189,6 +189,10 @@ class VoiceAssistant:
             logging.error(f"音频转文字失败: {str(e)}")
             return None
 
+    def _check_kws(self, text: str):
+        with self._time_it("关键字唤醒"):
+            return self.kws(text)
+
     def _generate_response(self, text: str, stream: bool = False):
         with self._time_it("LLM响应"):
             return self.llm.get_response(text, None, stream=stream)
@@ -216,12 +220,12 @@ class VoiceAssistant:
 
             with self._time_it("语音转录"):
                 text = self.stt.transcribe(sample_rate, audio)  
-                result = self.kws(text)
+                result = self._check_kws(text)
                 if result:
-                    print(f"检测到关键词: {result}")
+                    logging.info(f"检测到关键词: {result}")
                     self.is_awake_mode = False  # 切换到语音识别模式
                 else:
-                    print(f"未检测到关键词: raw text->{text}")
+                    logging.info(f"未检测到关键词: raw text: {text}")
 
             stream = True
             if stream:
