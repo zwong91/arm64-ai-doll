@@ -113,7 +113,7 @@ class VoiceAssistant:
                         logging.info(f"未检测到关键词: raw text: {text}")
                         return None
 
-            stream = False
+            stream = True
             if stream:
                 buffer = ""
                 seg_idx = 1  # 句子序号从 1 开始
