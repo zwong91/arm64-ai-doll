@@ -388,3 +388,10 @@ cd Offline-PortAudio
 dpkg -i *.deb
 
 ```
+
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+
+```bash
+apt install libopenblas-dev 
+export OPENBLAS_NUM_THREADS=1
+```
