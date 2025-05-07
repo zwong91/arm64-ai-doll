@@ -28,6 +28,18 @@ from src.utils.utils import smart_split
 from src.config.wake_keywords import keywords
 import re
 
+
+def clean_repeats(text):
+    # 處理連續詞語（1~4字）重複超過兩次
+    for n in range(4, 0, -1):  # 先處理長詞，避免誤判
+        pattern = rf'((\S{{{n}}}))(\2){{2,}}'
+        text = re.sub(pattern, r'\1\2', text)
+    
+    # 處理單字元重複超過兩次（標點、單個字）
+    text = re.sub(r'(.)\1{2,}', r'\1\1', text)
+    
+    return text
+
 class VoiceAssistant:
     def __init__(self, config: Config):
         self._setup_logging()
@@ -126,7 +138,7 @@ class VoiceAssistant:
                     complete = sentences[:-1]
                     for sentence in complete:
                         logging.info(f"seg {seg_idx}: {sentence}\n")
-                        self._synthesize_response(sentence)
+                        self._synthesize_response(clean_repeats(sentence))
                         seg_idx += 1
 
                     # 保留最后一个不完整的片段
@@ -135,7 +147,7 @@ class VoiceAssistant:
                 # 处理剩下的残余内容
                 if buffer.strip():
                     logging.info(f"seg {seg_idx}: {buffer}\n")
-                    self._synthesize_response(buffer)
+                    self._synthesize_response(clean_repeats(buffer))
 
             else:
                 response = self._generate_response(text)
