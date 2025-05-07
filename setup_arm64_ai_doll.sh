@@ -104,7 +104,6 @@ ldconfig
 cd -
 
 echo "📦 Step 15: 开始 PyInstaller 打包"
-export OPENBLAS_NUM_THREADS=1
 pyinstaller --clean --onedir --noupx --name arm64_ai_doll \
   --add-data "sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:sherpa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" \
   --add-data "vad_ckpt:vad_ckpt" \

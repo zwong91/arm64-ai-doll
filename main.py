@@ -240,7 +240,7 @@ class VoiceAssistant:
                     complete = sentences[:-1]
                     for sentence in complete:
                         logging.info(f"seg {seg_idx}: {sentence}\n")
-                        self._synthesize_response(sentence)
+                        self._synthesize_response(clean_repeats(sentence))
                         seg_idx += 1
 
                     # 保留最后一个不完整的片段
@@ -249,7 +249,7 @@ class VoiceAssistant:
                 # 处理剩下的残余内容
                 if buffer.strip():
                     logging.info(f"seg {seg_idx}: {buffer}\n")
-                    self._synthesize_response(buffer)
+                    self._synthesize_response(clean_repeats(buffer))
 
             else:
                 response = self._generate_response(text)
@@ -257,7 +257,7 @@ class VoiceAssistant:
                 seg_idx = 1
                 for sentence in sentences:
                     logging.info(f"seg {seg_idx}: {sentence}\n")
-                    self._synthesize_response(sentence)
+                    self._synthesize_response(clean_repeats(sentence))
                     seg_idx += 1
 
             logging.info(f"总耗时: {time.time() - all_start:.2f}秒")
