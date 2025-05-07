@@ -46,7 +46,7 @@ class VoiceAssistant:
             #self.speech_enhancer = SpeechEnhancer(config.denoiser_model)
 
             self.stt = SpeechToText(config.asr_model)
-            self.tts = TextToSpeech(config.tts_model)
+            self.tts = TextToSpeech(config.tts_model, config.output_device)
             self.llm = LocalLLMClient(config.llm_model)
             self.recorder = Recorder(
                 sample_rate=config.sample_rate,
@@ -256,7 +256,7 @@ def main():
         parser.add_argument('--file', '-f')
         parser.add_argument('--list-devices', '-l', action='store_true')
         parser.add_argument('--input-device', default='default')
-        parser.add_argument('--output-device', default='default')
+        parser.add_argument('--output-device', default=None)
         parser.add_argument('--pid-file')
         parser.add_argument('--vad-model', default='vad_ckpt/silero_vad.onnx')
         args = parser.parse_args()

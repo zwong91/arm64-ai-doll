@@ -3,7 +3,7 @@ class Config:
         self,
         asr_model: str = "sensevoice",
         input_device: str = "default",
-        output_device: str = "default",
+        output_device = None,
         vad_model: str = "vad_ckpt/silero_vad.onnx",
         sample_rate: int = 16000,
         tts_model: str = "sherpa/vits-icefall-zh-aishell3",

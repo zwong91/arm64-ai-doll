@@ -87,7 +87,8 @@ def stop_playback():
 
 class TextToSpeech:
     def __init__(self, 
-                 model_dir="sherpa/vits-icefall-zh-aishell3",  
+                 model_dir="sherpa/vits-icefall-zh-aishell3",
+                 output_device=None,  # 默认输出设备
                  backend="sherpa-onnx",
                  voice="af_alloy",   
                  speed=1.3,
@@ -95,6 +96,7 @@ class TextToSpeech:
         self.backend = backend
         self.voice = voice
         self.speed = speed
+        self.output_device = int(output_device) if output_device.isdigit() else output_device
         real_path = resource_path(model_dir)
         if real_path is None:
             raise ValueError("model_dir must be specified")
@@ -202,17 +204,10 @@ class TextToSpeech:
             stopped = False
 
             start = time.time()
-            # audio = tts.generate(text, sid=sid, speed=self.speed,
-            #                      callback=generated_audio_callback,)
             #Speech speed. Larger->faster; smaller->slower
             audio = tts.generate(text, sid=sid, speed=self.speed)
             end = time.time()
             logging.info(f"合成耗时: {end - start:.3f}秒")
-
-            # with play_thread_lock:
-            #     if not play_thread_started:
-            #         threading.Thread(target=play_audio, daemon=True).start()
-            #         play_thread_started = True
 
             stopped = True
 
@@ -223,18 +218,11 @@ class TextToSpeech:
             elapsed_seconds = end - start
             audio_duration = len(audio.samples) / audio.sample_rate
             real_time_factor = elapsed_seconds / audio_duration
-
-            # sf.write(
-            #     output_file,
-            #     audio.samples,
-            #     samplerate=audio.sample_rate,
-            #     subtype="PCM_16",
-            # )
             
             State().pause_listening()  # 禁用监听
             
             # 播放音频
-            sd.play(audio.samples, samplerate=tts.sample_rate)
+            sd.play(audio.samples, samplerate=tts.sample_rate, device=self.output_device)
             sd.wait()
 
             State().resume_listening()  # 启用监听
