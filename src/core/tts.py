@@ -96,7 +96,15 @@ class TextToSpeech:
         self.backend = backend
         self.voice = voice
         self.speed = speed
-        self.output_device = int(output_device) if output_device.isdigit() else output_device
+        # 如果 output_device 为 None，直接使用 sounddevice 默认设备
+        if output_device is None:
+            self.output_device = None  # 不做任何修改，使用默认设备
+        elif output_device.isdigit():
+            # 如果是设备编号，转换为整数
+            self.output_device = int(output_device)
+        else:
+            # 如果是设备名称，保留原始设备名称
+            self.output_device = output_device
         real_path = resource_path(model_dir)
         if real_path is None:
             raise ValueError("model_dir must be specified")
